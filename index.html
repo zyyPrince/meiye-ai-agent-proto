@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>美业门店 AI Agent · 原型演示</title>
+<style>
+:root{
+  --bg:#070b16;
+  --glass:rgba(255,255,255,.05);
+  --brd:rgba(255,255,255,.10);
+  --txt:#EAF0FF;
+  --txt2:#9fb2d4;
+  --txt3:#6b7a9c;
+  --grad:linear-gradient(135deg,#22D3EE,#6366F1);
+  --cyan:#22D3EE; --purple:#A855F7; --green:#23C08A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+  background:var(--bg);color:var(--txt);min-height:100vh;padding:56px 20px 40px;position:relative;overflow-x:hidden;
+}
+body::before{content:"";position:fixed;inset:0;background:
+  radial-gradient(900px 500px at 12% -8%,rgba(99,102,241,.20),transparent 60%),
+  radial-gradient(800px 480px at 100% 0%,rgba(34,211,238,.16),transparent 55%),
+  radial-gradient(700px 600px at 80% 110%,rgba(168,85,247,.14),transparent 60%);pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:880px;margin:0 auto}
+
+.hero{text-align:center;margin-bottom:38px}
+.logo{display:inline-flex;align-items:center;gap:12px;margin-bottom:14px}
+.logo .em{width:44px;height:44px;border-radius:13px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:23px;box-shadow:0 8px 24px rgba(34,211,238,.28)}
+.logo .nm{font-size:21px;font-weight:800;letter-spacing:.5px}
+h1{font-size:30px;font-weight:800;letter-spacing:.5px;line-height:1.32;margin-bottom:10px}
+h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--txt2);font-size:14px;line-height:1.75}
+
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px}
+@media(max-width:720px){.cards{grid-template-columns:1fr}}
+a.card{
+  display:block;text-decoration:none;color:inherit;
+  background:var(--glass);border:1px solid var(--brd);border-radius:18px;padding:26px 24px;
+  backdrop-filter:blur(16px);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+a.card:hover{transform:translateY(-4px);border-color:rgba(34,211,238,.45);box-shadow:0 18px 44px rgba(0,0,0,.42)}
+.card .ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:23px;margin-bottom:16px;background:var(--grad)}
+.card .ic.p2{background:linear-gradient(135deg,#A855F7,#6366F1)}
+.card h2{font-size:17px;font-weight:800;margin-bottom:6px}
+.card .ver{display:inline-block;font-size:11px;font-weight:700;color:var(--cyan);background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.28);border-radius:20px;padding:2px 9px;margin-bottom:12px}
+.card .desc{color:var(--txt2);font-size:13px;line-height:1.7;margin-bottom:14px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.tags span{font-size:11px;color:var(--txt2);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:3px 8px}
+.go{font-size:13px;font-weight:700;color:var(--cyan)}
+.go::after{content:" →"}
+
+.tip{
+  background:rgba(255,255,255,.04);border:1px solid var(--brd);border-left:3px solid var(--cyan);
+  border-radius:12px;padding:16px 18px;font-size:13px;color:var(--txt2);line-height:1.85;
+}
+.tip b{color:var(--txt);font-weight:700}
+.tip code{background:rgba(34,211,238,.12);color:var(--cyan);border-radius:4px;padding:1px 6px;font-size:12px}
+.foot{text-align:center;color:var(--txt3);font-size:12px;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="logo"><span class="em">✨</span><span class="nm">智店 AI</span></div>
+    <h1>美业门店 <em>AI Agent</em> · 原型演示</h1>
+    <p class="sub">高保真可交互原型，可直接点击操作。共两套端：门店小程序端（店员 / 老板日常使用）与平台管理后台（SaaS 平台方运营使用）。</p>
+  </div>
+
+  <div class="cards">
+    <a class="card" href="store-miniapp.html">
+      <div class="ic">📱</div>
+      <h2>门店小程序端</h2>
+      <span class="ver">v5.1</span>
+      <p class="desc">门店店员与老板日常使用的移动端。含 AI 智能助手、客户管理与唤醒、AI 短视频生成、招聘、门店经营看板等完整流程。</p>
+      <div class="tags"><span>AI 助手</span><span>拍视频</span><span>客户管理</span><span>门店经营</span><span>账号设置</span></div>
+      <div class="go">打开原型</div>
+    </a>
+
+    <a class="card" href="admin-console.html">
+      <div class="ic p2">🛠️</div>
+      <h2>平台管理后台</h2>
+      <span class="ver">v1.6</span>
+      <p class="desc">SaaS 平台方运营后台。含数据总览、AI Agent 监控、客户与订阅管理、集成管理、角色与账户管理等。</p>
+      <div class="tags"><span>数据总览</span><span>AI Agent 监控</span><span>订阅管理</span><span>集成管理</span><span>角色账户</span></div>
+      <div class="go">打开原型</div>
+    </a>
+  </div>
+
+  <div class="tip">
+    <b>查看说明</b><br>
+    · 管理后台支持三类账号登录：<code>平台管理员</code>、<code>平台运营</code>、<code>门店店长</code>，登录页可直接切换体验不同数据权限（店长仅看本店数据）。<br>
+    · 门店小程序端为手机竖屏界面，建议在浏览器中按 <code>F12</code> 开启设备工具栏（手机模式）查看，效果更佳。<br>
+    · 原型为演示数据，所有交互均可点击，无需真实账号密码。
+  </div>
+
+  <div class="foot">智店 AI · 美业门店 AI Agent 原型 · © 2026</div>
+</div>
+</body>
+</html>
