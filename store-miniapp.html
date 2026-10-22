@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智店 AI · 美业门店小程序原型 v5</title>
+<style>
+  :root{
+    --bg:#070B16; --bg2:#0C1322;
+    --glass:rgba(255,255,255,.05); --glass2:rgba(255,255,255,.08);
+    --brd:rgba(255,255,255,.12); --brd2:rgba(255,255,255,.18);
+    --txt:#EAF0FF; --txt2:#9AA6C0; --txt3:#5E6B86;
+    --c1:#22D3EE; --c2:#6366F1; --c3:#A855F7;
+    --grad:linear-gradient(135deg,#22D3EE,#6366F1 55%,#A855F7);
+    --grad-soft:linear-gradient(135deg,rgba(34,211,238,.18),rgba(168,85,247,.18));
+    --radius:18px; --r2:14px;
+    --warn:#FFB020; --warn2:#FF5C7A;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:#05070e;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--txt);}
+  body{display:flex;justify-content:center;padding:24px 12px;min-height:100vh;}
+
+  .phone{position:relative;width:390px;height:844px;background:var(--bg);border-radius:46px;
+    box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);overflow:hidden;border:10px solid #0a0d16;}
+  .phone::before{content:"";position:absolute;inset:0;z-index:0;
+    background:
+      radial-gradient(420px 320px at 85% -5%,rgba(99,102,241,.30),transparent 60%),
+      radial-gradient(380px 300px at -10% 22%,rgba(34,211,238,.22),transparent 60%),
+      radial-gradient(420px 360px at 50% 110%,rgba(168,85,247,.25),transparent 60%),
+      linear-gradient(180deg,#070B16,#0a0f1e);}
+  .phone::after{content:"";position:absolute;inset:0;z-index:0;opacity:.5;
+    background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:22px 22px;
+    -webkit-mask-image:linear-gradient(180deg,#000,transparent 70%);mask-image:linear-gradient(180deg,#000,transparent 70%);}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:26px;background:#070b16;border-radius:0 0 18px 18px;z-index:60;}
+  .statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;
+    font-size:13px;font-weight:600;color:var(--txt);position:relative;z-index:55;}
+  .statusbar .right{display:flex;gap:6px;align-items:center;}
+  .sb-ico{width:17px;height:11px;display:inline-block;}
+
+  .viewport{flex:1;height:calc(844px - 44px - 84px);overflow:hidden;position:relative;z-index:5;}
+  .screen{position:absolute;inset:0;overflow-y:auto;padding:0 0 14px;display:none;}
+  .screen.active{display:block;}
+  .screen::-webkit-scrollbar{width:0;}
+
+  .card{background:var(--glass);border:1px solid var(--brd);border-radius:var(--radius);
+    padding:15px;margin:0 16px 12px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    box-shadow:0 8px 30px rgba(0,0,0,.25);}
+  .row{display:flex;align-items:center;gap:12px;}
+  .grow{flex:1;min-width:0;}
+
+  /* app bar */
+  .appbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 14px;
+    position:sticky;top:0;z-index:10;background:linear-gradient(180deg,rgba(7,11,22,.94),rgba(7,11,22,.45));
+    backdrop-filter:blur(12px);}
+  .appbar .title{font-size:19px;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:8px;}
+  .appbar .title .ai{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .appbar .sub{font-size:11.5px;color:var(--txt2);margin-top:3px;}
+  .badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--grad-soft);
+    border:1px solid var(--brd2);color:#cfe9ff;}
+
+  /* ===== 看板（参考稿）===== */
+  .gh{display:flex;align-items:center;justify-content:space-between;padding:6px 18px 8px;}
+  .gh .brand{font-size:20px;font-weight:800;letter-spacing:1.5px;}
+  .gh .brand span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .gh .sp{width:36px;height:36px;flex:0 0 auto;}
+  .gear{width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.06);border:1px solid var(--brd);
+    display:flex;align-items:center;justify-content:center;color:#B9C4DE;cursor:pointer;}
+  .gear svg{width:19px;height:19px;}
+
+  /* 门店下拉切换 */
+  .stores{padding:2px 16px 12px;position:relative;}
+  .std{position:relative;display:inline-block;}
+  .stbtn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:20px;font-size:13px;
+    font-weight:700;color:#fff;background:var(--grad-soft);border:1px solid var(--brd2);cursor:pointer;
+    box-shadow:0 4px 14px rgba(99,102,241,.22);transition:.15s;}
+  .stbtn:active{transform:scale(.97);}
+  .stbtn .car{font-size:9px;color:#BFD3F5;transition:transform .2s;}
+  .std.open .stbtn{border-color:rgba(34,211,238,.55);box-shadow:0 6px 18px rgba(99,102,241,.4);}
+  .std.open .stbtn .car{transform:rotate(180deg);}
+  .stmenu{position:absolute;left:0;top:calc(100% + 6px);min-width:268px;z-index:35;display:none;padding:6px;
+    background:rgba(11,17,32,.97);border:1px solid var(--brd2);border-radius:14px;backdrop-filter:blur(18px);
+    box-shadow:0 20px 44px rgba(0,0,0,.6);}
+  .std.open .stmenu{display:block;animation:dd .18s ease;}
+  @keyframes dd{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  .stmi{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:10px;font-size:13px;
+    font-weight:600;color:var(--txt2);cursor:pointer;white-space:nowrap;}
+  .stmi:active,.stmi:hover{background:rgba(255,255,255,.06);}
+  .stmi.on{color:#fff;background:var(--grad-soft);}
+  .stmi .ck{width:15px;flex:0 0 auto;font-size:12px;color:#7fe9ff;text-align:center;}
+  .stmi .sm{font-size:10.5px;color:var(--txt3);font-weight:600;margin-left:auto;flex:0 0 auto;}
+  .stmi.on .sm{color:#A9C4E8;}
+  .stmask{position:fixed;inset:0;z-index:30;display:none;}
+  .stmask.show{display:block;}
+
+  .greet{margin:0 16px 12px;padding:13px 15px;border-radius:16px;position:relative;overflow:hidden;
+    background:linear-gradient(120deg,rgba(99,102,241,.32),rgba(34,211,238,.10) 60%,rgba(168,85,247,.22));
+    border:1px solid rgba(139,163,255,.30);}
+  .greet::after{content:"";position:absolute;right:-40px;top:-46px;width:140px;height:140px;border-radius:50%;
+    background:radial-gradient(circle,rgba(168,85,247,.5),transparent 70%);filter:blur(6px);}
+  .greet-top{display:flex;align-items:center;gap:9px;position:relative;}
+  .pill-ai{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;color:#0b1020;
+    background:linear-gradient(135deg,#7DE8FF,#B9A8FF);flex:0 0 auto;}
+  .greet h2{margin:0;font-size:16.5px;font-weight:800;position:relative;}
+  .greet p{margin:7px 0 0;font-size:13px;color:#D6E1FA;position:relative;line-height:1.5;}
+
+  .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 12px;}
+  .dcard{position:relative;padding:11px 13px 11px;border-radius:16px;overflow:hidden;
+    background:linear-gradient(165deg,rgba(99,102,241,.14),rgba(255,255,255,.035) 55%);
+    border:1px solid rgba(139,163,255,.22);cursor:pointer;transition:.16s;}
+  .dcard:active{transform:scale(.98);}
+  .dcard::before{content:"";position:absolute;left:12px;right:12px;top:0;height:1.5px;
+    background:linear-gradient(90deg,transparent,rgba(168,85,247,.9),rgba(34,211,238,.6),transparent);}
+  .dl{font-size:12px;color:#A9B5CE;display:flex;align-items:center;gap:5px;}
+  .dn{font-size:28px;font-weight:800;color:#fff;line-height:1.05;margin-top:5px;letter-spacing:-.5px;}
+  .dn i{font-style:normal;font-size:12px;font-weight:600;color:#A9B5CE;margin-left:4px;letter-spacing:0;}
+  .ds{font-size:11.5px;margin-top:7px;color:#6FE3F7;display:flex;align-items:center;gap:4px;font-weight:600;}
+  .ds.warn{color:#FFC46B;}
+
+  .todowrap{margin:0 16px 10px;padding:12px 12px 11px;border-radius:18px;
+    background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.10);}
+  .todowrap h3{margin:0 0 3px;font-size:14.5px;font-weight:800;display:flex;align-items:center;gap:7px;}
+  .todowrap h3 span{font-size:13px;color:var(--txt2);font-weight:700;}
+  .todo{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:13px;margin-top:8px;cursor:pointer;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);transition:.16s;}
+  .todo:active{transform:scale(.99);background:rgba(255,255,255,.08);}
+  .todo .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;margin-top:2px;}
+  .todo .tt{font-size:13.5px;font-weight:700;}
+  .todo .td{font-size:11.5px;color:var(--txt2);margin-top:4px;line-height:1.4;}
+  .todo .ar{color:var(--txt3);font-size:17px;flex:0 0 auto;}
+
+  /* ===== HERO GUIDE (AI助手) ===== */
+  .hero{margin:4px 16px 0;background:linear-gradient(135deg,rgba(99,102,241,.28),rgba(34,211,238,.12));
+    border:1px solid var(--brd2);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden;}
+  .hero .orb{position:absolute;right:-34px;top:-34px;width:130px;height:130px;border-radius:50%;
+    background:radial-gradient(circle,rgba(168,85,247,.55),transparent 70%);filter:blur(10px);}
+  .hero-top{display:flex;align-items:center;gap:11px;position:relative;}
+  .hero-ava{width:42px;height:42px;border-radius:13px;background:var(--grad);display:flex;align-items:center;
+    justify-content:center;font-size:22px;box-shadow:0 0 20px rgba(99,102,241,.6);flex:0 0 auto;}
+  .hero-title{font-size:17px;font-weight:800;}
+  .hero-sub{font-size:12.5px;color:#CFD9F2;margin-top:3px;}
+  .hero-tip{position:relative;margin-top:13px;font-size:13px;font-weight:700;color:#fff;
+    background:rgba(255,255,255,.10);border:1px dashed rgba(255,255,255,.22);border-radius:11px;
+    padding:9px 12px;text-align:center;}
+  .hero-tip .arrow{display:block;font-size:14px;margin-top:3px;animation:bob 1.4s infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0);opacity:.9}50%{transform:translateY(4px);opacity:1}}
+
+  /* ===== 5 AI 功能（大白话） ===== */
+  .funcs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 16px 0;}
+  .fcell{background:var(--glass);border:1px solid var(--brd);border-radius:var(--r2);padding:13px 12px 14px;
+    backdrop-filter:blur(14px);cursor:pointer;transition:.18s;position:relative;overflow:hidden;}
+  .fcell:active{transform:scale(.97);border-color:var(--brd2);}
+  .fico{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    font-size:23px;color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.3);}
+  .ftitle{font-size:15px;font-weight:800;margin-top:8px;display:flex;align-items:center;gap:6px;}
+  .fdesc{font-size:11.5px;color:var(--txt2);margin-top:3px;line-height:1.5;min-height:30px;}
+  .fcell.wide{grid-column:span 2;}
+
+  .tip{margin:12px 16px 0;font-size:12.5px;color:#BFD3F5;text-align:center;
+    background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.16);border-radius:11px;padding:9px 12px;line-height:1.5;}
+  .sec{display:flex;align-items:center;justify-content:space-between;margin:20px 16px 11px;}
+  .sec h3{font-size:15px;font-weight:800;margin:0;display:flex;align-items:center;gap:8px;}
+  .sec .bar{width:4px;height:15px;background:var(--grad);border-radius:3px;}
+  .sec .more{font-size:11.5px;color:var(--txt3);}
+
+  .avatar{width:44px;height:44px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;}
+  .name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .meta{font-size:12px;color:var(--txt2);margin-top:4px;line-height:1.5;}
+  .tag{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;font-weight:600;margin:4px 5px 0 0;border:1px solid transparent;}
+  .t-brand{background:rgba(34,211,238,.14);color:#7fe9ff;border-color:rgba(34,211,238,.3);}
+  .t-gold{background:rgba(245,181,68,.14);color:#ffd27a;border-color:rgba(245,181,68,.3);}
+  .t-green{background:rgba(35,192,138,.14);color:#7ff0c6;border-color:rgba(35,192,138,.3);}
+  .t-blue{background:rgba(62,139,255,.14);color:#9cc4ff;border-color:rgba(62,139,255,.3);}
+  .t-purple{background:rgba(168,85,247,.16);color:#d9b3ff;border-color:rgba(168,85,247,.32);}
+  .t-gray{background:rgba(255,255,255,.07);color:var(--txt2);border-color:var(--brd);}
+  .score{flex:0 0 auto;text-align:center;background:var(--grad-soft);border:1px solid var(--brd2);border-radius:12px;padding:6px 10px;}
+  .score .v{font-size:18px;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1;}
+  .score .k{font-size:9.5px;color:#bfe0ff;margin-top:3px;font-weight:600;}
+  .arrow{color:var(--txt3);font-size:18px;flex:0 0 auto;}
+
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{flex:0 0 auto;font-size:12.5px;padding:7px 14px;border-radius:20px;background:var(--glass);border:1px solid var(--brd);color:var(--txt2);font-weight:600;cursor:pointer;}
+  .chip.on{background:var(--grad);color:#fff;border-color:transparent;}
+
+  .btn{border:none;border-radius:12px;padding:12px 0;font-size:14.5px;font-weight:700;cursor:pointer;width:100%;font-family:inherit;}
+  .btn-primary{background:var(--grad);color:#fff;box-shadow:0 8px 22px rgba(99,102,241,.4);}
+  .btn-ghost{background:var(--glass);color:var(--txt);border:1px solid var(--brd2);}
+  .btn-line{background:transparent;color:#bfe0ff;border:1.5px solid rgba(34,211,238,.5);}
+  .btn-row{display:flex;gap:9px;}
+  .btn-row .btn{flex:1;}
+
+  /* tabbar */
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:84px;background:rgba(7,11,22,.88);
+    border-top:1px solid var(--brd);display:flex;align-items:center;padding:0 8px 16px;z-index:40;
+    backdrop-filter:blur(18px);}
+  .tab{flex:1;text-align:center;color:var(--txt3);font-size:10.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:center;position:relative;}
+  .tab svg{width:22px;height:22px;}
+  .tab.on{color:#fff;}
+  .tab.on svg{filter:drop-shadow(0 0 8px rgba(99,102,241,.9));}
+  .tab.voice{flex:0 0 78px;position:relative;}
+  .tab .dotn{position:absolute;top:2px;right:calc(50% - 20px);min-width:16px;height:16px;border-radius:9px;
+    background:linear-gradient(135deg,#FF5C7A,#FFB020);color:#fff;font-size:10px;font-weight:800;line-height:16px;padding:0 4px;}
+  .fab{position:absolute;top:-26px;left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;
+    background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;
+    box-shadow:0 0 0 6px rgba(99,102,241,.18),0 10px 26px rgba(99,102,241,.55);cursor:pointer;
+    animation:pulse 2.4s infinite;}
+  .fab svg{width:26px;height:26px;}
+  .fab.pressing{animation:rec 1s infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 6px rgba(99,102,241,.18),0 10px 26px rgba(99,102,241,.55);}50%{box-shadow:0 0 0 12px rgba(99,102,241,.10),0 10px 30px rgba(34,211,238,.6);}}
+  @keyframes rec{0%,100%{box-shadow:0 0 0 6px rgba(34,211,238,.25),0 0 26px rgba(34,211,238,.6);}50%{box-shadow:0 0 0 16px rgba(34,211,238,.08),0 0 34px rgba(34,211,238,.8);}}
+
+  /* voice overlay */
+  .vlayer{position:absolute;inset:0;z-index:90;background:rgba(5,7,14,.93);backdrop-filter:blur(8px);
+    display:none;flex-direction:column;align-items:center;justify-content:center;padding:30px;}
+  .vlayer.show{display:flex;animation:fade .2s;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .vtitle{font-size:15.5px;font-weight:800;color:#fff;margin-bottom:6px;}
+  .vsub{font-size:12.5px;color:var(--txt2);margin-bottom:28px;text-align:center;}
+  .vorb{width:118px;height:118px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 50px rgba(99,102,241,.6);animation:breathe 1.6s infinite;margin:0 auto;}
+  .vorb svg{width:46px;height:46px;color:#fff;}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+  .wave{display:flex;gap:5px;align-items:flex-end;height:46px;margin-top:32px;justify-content:center;}
+  .wave i{width:5px;background:var(--grad);border-radius:3px;height:12px;animation:wg 1s infinite ease-in-out;}
+  .wave i:nth-child(2){animation-delay:.1s}.wave i:nth-child(3){animation-delay:.2s}.wave i:nth-child(4){animation-delay:.3s}
+  .wave i:nth-child(5){animation-delay:.15s}.wave i:nth-child(6){animation-delay:.25s}.wave i:nth-child(7){animation-delay:.05s}
+  @keyframes wg{0%,100%{height:12px}50%{height:42px}}
+  .vhint{margin-top:24px;font-size:12px;color:var(--txt3);text-align:center;line-height:1.6;}
+  .vres{display:none;width:100%;max-width:330px;}
+  .vres.show{display:block;}
+  .bubble{background:var(--glass);border:1px solid var(--brd);border-radius:14px;padding:11px 13px;font-size:13px;line-height:1.55;margin:8px 0;}
+  .bubble.me{background:var(--grad-soft);border-color:var(--brd2);}
+  .bubble.ai{border-color:rgba(34,211,238,.3);}
+  .bubble.ai .who{font-size:10.5px;color:#7fe9ff;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+  .chips-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .qchip{font-size:11.5px;padding:8px 13px;border-radius:20px;background:var(--glass);border:1px solid var(--brd2);color:#cfe9ff;cursor:pointer;}
+  .vclose{position:absolute;top:58px;right:18px;width:34px;height:34px;border-radius:50%;background:var(--glass);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;color:var(--txt2);cursor:pointer;}
+
+  /* sub top */
+  .subtop{background:linear-gradient(135deg,rgba(99,102,241,.30),rgba(34,211,238,.10));
+    border-bottom:1px solid var(--brd);padding:10px 16px 18px;position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);}
+  .subtop .back{font-size:15px;font-weight:700;color:var(--txt);cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+  .subtop h2{margin:10px 0 0;font-size:20px;font-weight:800;display:flex;align-items:center;gap:9px;}
+  .subtop h2 .ai{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .subtop p{margin:6px 0 0;font-size:12.5px;color:var(--txt2);}
+
+  .ai-msg{display:flex;gap:10px;background:var(--glass);border:1px solid var(--brd);border-radius:14px;padding:12px;margin:0 16px 12px;backdrop-filter:blur(14px);}
+  .ai-msg .b{font-size:12.5px;line-height:1.6;color:#DCE6FF;}
+  .ai-msg .b b{color:#fff;}
+  .hint-card{background:rgba(245,181,68,.10);border:1px solid rgba(245,181,68,.28);border-radius:12px;padding:11px;font-size:12px;color:#ffdca0;margin:0 16px 12px;line-height:1.5;}
+  .hint-card b{color:#ffe6b0;}
+  .chat{background:var(--glass);border:1px solid var(--brd);border-radius:14px;padding:12px;margin:0 16px 12px;}
+  .foot{text-align:center;color:var(--txt3);font-size:11px;margin:14px 0 4px;}
+  .bar-track{height:15px;background:rgba(255,255,255,.07);border-radius:8px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:8px;background:var(--grad);}
+
+  /* ===== 客服会话列表 ===== */
+  .svc-sum{margin:0 16px 4px;display:flex;gap:9px;}
+  .svc-sum .s{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--brd);border-radius:14px;padding:11px 12px;}
+  .svc-sum .s .n{font-size:20px;font-weight:800;line-height:1;}
+  .svc-sum .s .l{font-size:11px;color:var(--txt2);margin-top:5px;}
+  .svc-sum .s.w{border-color:rgba(255,176,32,.45);background:linear-gradient(160deg,rgba(255,176,32,.16),rgba(255,92,122,.06));}
+  .svc-sum .s.w .n{color:#FFCF7A;}
+
+  .conv{display:flex;gap:12px;padding:14px 15px;border-radius:15px;background:rgba(255,255,255,.045);
+    border:1px solid rgba(255,255,255,.09);margin:0 16px 10px;cursor:pointer;position:relative;transition:.15s;overflow:hidden;}
+  .conv:active{transform:scale(.99);}
+  .conv.wait{background:linear-gradient(120deg,rgba(255,176,32,.16),rgba(255,92,122,.07));
+    border-color:rgba(255,176,32,.48);box-shadow:0 0 0 1px rgba(255,176,32,.14),0 8px 24px rgba(255,140,0,.14);}
+  .conv.wait::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;
+    background:linear-gradient(180deg,#FFB020,#FF5C7A);}
+  .conv .nm{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .conv .msg{font-size:12.5px;color:var(--txt2);margin-top:5px;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .conv .rt{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:0 0 auto;}
+  .conv .tm{font-size:10.5px;color:var(--txt3);}
+  .stbadge{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:20px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
+  .sb-ai{background:rgba(35,192,138,.16);color:#7ff0c6;border:1px solid rgba(35,192,138,.35);}
+  .sb-wait{background:rgba(255,176,32,.22);color:#FFCF7A;border:1px solid rgba(255,176,32,.55);}
+  .sb-done{background:rgba(62,139,255,.16);color:#9CC4FF;border:1px solid rgba(62,139,255,.35);}
+  .pdot{width:6px;height:6px;border-radius:50%;background:#FFB020;animation:pd 1.3s infinite;}
+  @keyframes pd{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+
+  .morebtn{margin:2px 16px 6px;padding:12px;border-radius:13px;text-align:center;font-size:13px;font-weight:700;
+    color:#BFD3F5;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.18);cursor:pointer;}
+  .morebtn span{color:var(--txt2);font-size:11px;}
+
+  /* ===== 会话记录 ===== */
+  #chatlog.active{display:flex;flex-direction:column;}
+  #chatlog .cl{flex:1 0 auto;}
+  .chatlog-top{padding:8px 16px 10px;}
+  .chatlog-top .nm{font-size:16px;font-weight:800;}
+  .chatlog-top .sb{font-size:11.5px;color:var(--txt2);margin-top:4px;}
+  .cl{padding:8px 16px 4px;}
+  .mline{display:flex;margin-bottom:12px;}
+  .mline.me{justify-content:flex-end;}
+  .mb{max-width:78%;border-radius:15px;padding:10px 13px;font-size:13px;line-height:1.55;}
+  .mline.cust .mb{background:rgba(255,255,255,.075);border:1px solid var(--brd);border-top-left-radius:4px;}
+  .mline.ai .mb{background:linear-gradient(135deg,rgba(34,211,238,.18),rgba(99,102,241,.2));border:1px solid rgba(34,211,238,.32);border-top-right-radius:4px;}
+  .mline.hm .mb{background:linear-gradient(135deg,rgba(35,192,138,.2),rgba(34,211,238,.12));border:1px solid rgba(35,192,138,.38);border-top-right-radius:4px;}
+  .who{font-size:10px;font-weight:800;margin-bottom:5px;display:flex;align-items:center;gap:5px;opacity:.95;}
+  .mline.ai .who{color:#7fe9ff;}
+  .mline.hm .who{color:#7ff0c6;}
+  .mline.cust .who{color:#93A1BC;}
+  .mline .ct{font-size:10px;color:var(--txt3);margin-top:4px;text-align:right;}
+
+  .waitbar{margin:0 16px 12px;padding:12px 13px;border-radius:13px;font-size:12.5px;line-height:1.5;
+    background:linear-gradient(120deg,rgba(255,176,32,.18),rgba(255,92,122,.08));
+    border:1px solid rgba(255,176,32,.45);color:#FFD79A;}
+  .waitbar b{color:#FFE7BE;}
+
+  .reply{position:sticky;bottom:0;margin-top:auto;background:rgba(7,11,22,.94);backdrop-filter:blur(12px);
+    border-top:1px solid var(--brd);padding:10px 14px 14px;}
+  .qr{display:flex;gap:7px;overflow-x:auto;padding-bottom:9px;scrollbar-width:none;}
+  .qr::-webkit-scrollbar{display:none;}
+  .qr div{flex:0 0 auto;font-size:11.5px;padding:7px 12px;border-radius:20px;background:rgba(255,255,255,.06);
+    border:1px solid var(--brd2);color:#CFE0FF;cursor:pointer;}
+  .inputrow{display:flex;gap:9px;align-items:center;}
+  .inputrow input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--brd2);border-radius:22px;
+    padding:11px 15px;color:#fff;font-size:13px;outline:none;font-family:inherit;}
+  .inputrow input::placeholder{color:var(--txt3);}
+  .inputrow .send{width:auto;padding:11px 20px;border-radius:22px;flex:0 0 auto;}
+
+  /* ===== 我的 列表 ===== */
+  .list{background:var(--glass);border:1px solid var(--brd);border-radius:16px;margin:0 16px 12px;overflow:hidden;backdrop-filter:blur(14px);}
+  .li{display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;transition:.15s;}
+  .li:last-child{border-bottom:none;}
+  .li:active{background:rgba(255,255,255,.05);}
+  .li .ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto;background:rgba(255,255,255,.07);}
+  .li .t{font-size:13.8px;font-weight:700;}
+  .li .d{font-size:11.5px;color:var(--txt2);margin-top:3px;}
+  .li .st{font-size:11.5px;font-weight:800;color:var(--txt3);flex:0 0 auto;}
+  .li .st.ok{color:#7ff0c6;}
+  .li .ar{color:var(--txt3);font-size:17px;flex:0 0 auto;}
+
+  /* ================= AI 生成 → 预览 → 手动分发 ================= */
+  .gen{margin:0 16px 12px;padding:14px;border-radius:18px;position:relative;overflow:hidden;
+    background:linear-gradient(150deg,rgba(99,102,241,.17),rgba(34,211,238,.06));border:1px solid var(--brd2);}
+  .gen .gt{font-size:14.5px;font-weight:800;display:flex;align-items:center;gap:7px;}
+  .gen .gd{font-size:11.5px;color:var(--txt2);margin-top:6px;line-height:1.55;}
+  .btn-ai{background:linear-gradient(135deg,#6366F1,#A855F7);color:#fff;box-shadow:0 8px 22px rgba(139,92,246,.4);}
+  .btn-ai.load{opacity:.8;}
+  .spin{display:inline-block;width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.35);
+    border-top-color:#fff;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:7px;}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .prev{margin:0 16px 12px;border-radius:18px;overflow:hidden;border:1px solid var(--brd2);
+    background:rgba(255,255,255,.05);backdrop-filter:blur(14px);display:none;}
+  .prev.show{display:block;animation:up2 .22s ease;}
+  @keyframes up2{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .phead{padding:12px 14px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;}
+  .phead .t{font-size:13.5px;font-weight:800;display:flex;align-items:center;gap:6px;}
+  .phead .e{font-size:11.5px;color:#9fd8ff;font-weight:700;cursor:pointer;}
+  .pbody{padding:14px;}
+  .adtitle{font-size:15px;font-weight:800;line-height:1.5;outline:none;}
+  .adtext{font-size:13px;color:#D3DEF5;line-height:1.8;margin-top:9px;white-space:pre-line;outline:none;}
+  .adtag{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px;}
+  .adtag span{font-size:11px;color:#7fe9ff;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.28);padding:4px 9px;border-radius:20px;}
+  .ptip{font-size:11.5px;color:var(--txt3);margin-top:11px;line-height:1.5;}
+  .editable{border:1px dashed rgba(255,255,255,.20);border-radius:11px;padding:11px;outline:none;
+    background:rgba(255,255,255,.04);font-size:12.5px;color:#EAF0FF;line-height:1.8;white-space:pre-line;font-family:inherit;}
+  .editable:focus{border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.05);}
+  .rule{font-size:11.5px;color:#9fd8ff;background:rgba(34,211,238,.10);border:1px solid rgba(34,211,238,.26);
+    border-radius:10px;padding:8px 10px;margin-top:11px;line-height:1.5;}
+
+  .dist{margin:0 16px 12px;padding:13px;border-radius:18px;background:rgba(255,255,255,.045);
+    border:1px solid var(--brd);display:none;}
+  .dist.show{display:block;animation:up2 .22s ease;}
+  .dtitle{font-size:13.5px;font-weight:800;}
+  .dsub{font-size:11.5px;color:var(--txt2);margin-top:4px;margin-bottom:6px;line-height:1.5;}
+  .pf{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--brd);
+    background:rgba(255,255,255,.04);margin-top:8px;cursor:pointer;transition:.15s;}
+  .pf.on{border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.10);}
+  .pf .pi{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    font-size:13px;color:#fff;flex:0 0 auto;font-weight:800;}
+  .pf .pn{font-size:13px;font-weight:700;}
+  .pf .pd{font-size:11px;color:var(--txt2);margin-top:2px;}
+  .pf .ck{margin-left:auto;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--brd2);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;}
+  .pf.on .ck{background:linear-gradient(135deg,#22D3EE,#6366F1);border-color:transparent;color:#fff;}
+  .pf.off{opacity:.6;}
+  .pf.off .pd{color:#FFC46B;}
+
+  .coupon{border-radius:16px;padding:16px;background:linear-gradient(135deg,rgba(255,92,122,.18),rgba(245,181,68,.14));
+    border:1px dashed rgba(255,200,120,.45);}
+  .coupon .ct{font-size:16.5px;font-weight:900;letter-spacing:.3px;}
+  .coupon .cs{font-size:12.5px;color:#FFDCA8;margin-top:7px;line-height:1.65;}
+  .coupon .cv{display:flex;align-items:flex-end;gap:7px;margin-top:13px;}
+  .coupon .cv b{font-size:30px;font-weight:900;color:#FFE7BE;line-height:1;}
+  .coupon .cv i{font-style:normal;font-size:11.5px;color:#FFDCA8;margin-bottom:4px;}
+  .coupon .cf{font-size:11px;color:#CDB88F;border-top:1px dashed rgba(255,200,120,.32);margin-top:12px;
+    padding-top:9px;display:flex;justify-content:space-between;}
+
+  .vid{border-radius:14px;overflow:hidden;border:1px solid var(--brd2);background:#0b1020;position:relative;}
+  .vid .thumb{height:152px;position:relative;display:flex;align-items:center;justify-content:center;font-size:38px;
+    background:linear-gradient(135deg,rgba(99,102,241,.38),rgba(168,85,247,.26));}
+  .vid .play{position:absolute;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.40);display:flex;align-items:center;justify-content:center;font-size:16px;backdrop-filter:blur(6px);}
+  .vid .vbar{position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:center;gap:8px;font-size:10.5px;color:#DCE6FF;}
+  .vid .vtrack{flex:1;height:3px;background:rgba(255,255,255,.25);border-radius:2px;overflow:hidden;}
+  .vid .vfill{width:40%;height:100%;background:#fff;border-radius:2px;}
+  .plat{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;}
+  .plat::-webkit-scrollbar{display:none;}
+  .pt{flex:0 0 auto;font-size:12.5px;padding:8px 14px;border-radius:20px;background:rgba(255,255,255,.05);
+    border:1px solid var(--brd);color:var(--txt2);font-weight:700;cursor:pointer;}
+  .pt.on{background:var(--grad);color:#fff;border-color:transparent;}
+
+  /* ================= 各 tab 配色区分 ================= */
+  /* 客服 · 薄荷青绿（通信） */
+  #service{background:
+      radial-gradient(420px 300px at 108% -6%,rgba(34,211,238,.18),transparent 62%),
+      radial-gradient(360px 300px at -10% 34%,rgba(43,231,192,.13),transparent 62%);}
+  #service .appbar{background:linear-gradient(180deg,rgba(6,29,31,.95),rgba(7,11,22,.45));
+    border-bottom:1px solid rgba(43,231,192,.14);}
+  #service .appbar .title .ai{background:linear-gradient(135deg,#2BE7C0,#22D3EE 55%,#4FA8FF);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  #service .appbar .sub{color:#8FB8C6;}
+  #service .badge{background:linear-gradient(135deg,rgba(43,231,192,.20),rgba(255,176,32,.16));
+    border-color:rgba(43,231,192,.42);color:#9DF3E2;}
+  #service .svc-sum .s{background:linear-gradient(160deg,rgba(34,211,238,.11),rgba(255,255,255,.04));
+    border-color:rgba(43,231,192,.24);}
+  #service .svc-sum .s .n{color:#A6F2E6;}
+  #service .svc-sum .s .l{color:#8FA8B8;}
+  #service .chip.on{background:linear-gradient(135deg,#22D3EE,#2BE7C0);color:#04231E;}
+  #service .conv{background:linear-gradient(140deg,rgba(34,211,238,.075),rgba(255,255,255,.04));
+    border-color:rgba(43,231,192,.20);}
+  #service .conv.wait{background:linear-gradient(120deg,rgba(255,176,32,.17),rgba(255,92,122,.07));
+    border-color:rgba(255,176,32,.50);}
+  #service .morebtn{background:rgba(34,211,238,.07);border-color:rgba(43,231,192,.30);color:#A6F2E6;}
+  #service .morebtn span{color:#7FA6B4;}
+  #service .foot{color:#6E8A96;}
+  .tab[data-tab="service"].on{color:#8FF3DC;}
+  .tab[data-tab="service"].on svg{filter:drop-shadow(0 0 8px rgba(43,231,192,.95));}
+
+  /* 我的 · 紫金（账号） */
+  #mine{background:
+      radial-gradient(420px 320px at -10% -6%,rgba(168,85,247,.20),transparent 62%),
+      radial-gradient(380px 320px at 110% 44%,rgba(245,181,68,.11),transparent 62%);}
+  #mine .appbar{background:linear-gradient(180deg,rgba(25,13,42,.95),rgba(7,11,22,.45));
+    border-bottom:1px solid rgba(168,85,247,.16);}
+  #mine .appbar .title{background:linear-gradient(120deg,#C08BFF,#F7B955 80%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  #mine .sec .bar{background:linear-gradient(135deg,#A855F7,#F5B544);}
+  #mine .sec h3{color:#EFE3FF;}
+  #mine .sec .more{color:#9C86C0;}
+  #mine .card{background:linear-gradient(150deg,rgba(168,85,247,.10),rgba(255,255,255,.045));
+    border-color:rgba(168,85,247,.22);}
+  #mine .card.gold{background:linear-gradient(140deg,rgba(245,181,68,.14),rgba(168,85,247,.08));
+    border-color:rgba(245,181,68,.30);}
+  #mine .list{background:linear-gradient(155deg,rgba(168,85,247,.085),rgba(255,255,255,.045));
+    border-color:rgba(168,85,247,.20);}
+  #mine .li{border-bottom-color:rgba(168,85,247,.12);}
+  #mine .li:active{background:rgba(168,85,247,.10);}
+  #mine .li .ico{background:rgba(168,85,247,.16);color:#D9B3FF;}
+  #mine .li .st.ok{color:#D9B3FF;}
+  #mine .foot{color:#8C7BAE;}
+  #mine .btn-line{color:#E4D2FF;border-color:rgba(200,150,255,.55);}
+  #mine .tag.t-green{background:rgba(245,181,68,.14);color:#FFD98A;border-color:rgba(245,181,68,.32);}
+  .tab[data-tab="mine"].on{color:#D9B3FF;}
+  .tab[data-tab="mine"].on svg{filter:drop-shadow(0 0 8px rgba(168,85,247,.95));}
+
+  .modal{position:absolute;inset:0;background:rgba(5,7,14,.6);z-index:80;display:none;align-items:flex-end;}
+  .modal.show{display:flex;}
+  .sheet{background:var(--bg2);width:100%;border-radius:22px 22px 0 0;padding:8px 0 22px;border-top:1px solid var(--brd);overflow-y:auto;max-height:82%;animation:up .22s ease;}
+  @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
+  .grab{width:38px;height:4px;background:var(--brd2);border-radius:3px;margin:8px auto 12px;}
+  .shead{padding:0 16px 12px;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:space-between;}
+  .sbody{padding:0 16px;}
+
+  .toast{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(10,14,26,.95);border:1px solid var(--brd2);color:#fff;font-size:13px;padding:10px 18px;border-radius:20px;z-index:99;opacity:0;transition:.2s;pointer-events:none;white-space:nowrap;}
+
+  /* ================= 登录页 ================= */
+  .phone.nobar .tabbar{display:none;}
+  .phone.nobar .viewport{height:calc(844px - 44px);}
+  #login{background:linear-gradient(180deg,#0A1020,#0C1426 60%,#0A0F1E);}
+  .login{display:flex;flex-direction:column;align-items:center;padding:64px 30px 30px;min-height:100%;}
+  .login .lg-logo{width:84px;height:84px;border-radius:26px;background:var(--grad);display:flex;align-items:center;justify-content:center;
+    font-size:42px;box-shadow:0 0 40px rgba(99,102,241,.6);margin-bottom:18px;}
+  .login .lg-brand{font-size:26px;font-weight:900;letter-spacing:2px;}
+  .login .lg-brand span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .login .lg-slogan{font-size:13px;color:var(--txt2);margin-top:8px;letter-spacing:.5px;}
+  .lg-role{display:flex;gap:12px;margin:38px 0 20px;width:100%;}
+  .lg-role .opt{flex:1;text-align:center;padding:16px 0;border-radius:16px;background:var(--glass);border:1px solid var(--brd);
+    font-size:15px;font-weight:700;color:var(--txt2);cursor:pointer;transition:.16s;}
+  .lg-role .opt .em{font-size:24px;display:block;margin-bottom:6px;}
+  .lg-role .opt.on{color:#fff;background:var(--grad-soft);border-color:rgba(34,211,238,.55);box-shadow:0 6px 18px rgba(99,102,241,.32);}
+  .lg-field{width:100%;display:flex;align-items:center;gap:10px;background:var(--glass);border:1px solid var(--brd);border-radius:14px;padding:14px 15px;margin-bottom:13px;}
+  .lg-field .lp{font-size:16px;opacity:.8;}
+  .lg-field input{flex:1;background:transparent;border:none;outline:none;color:var(--txt);font-size:15px;font-family:inherit;}
+  .lg-field input::placeholder{color:var(--txt3);}
+  .lg-wx{margin-top:24px;display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px 0;border-radius:14px;
+    background:linear-gradient(135deg,#07C160,#09AD56);color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 8px 22px rgba(7,193,96,.35);}
+  .lg-tip{margin-top:22px;font-size:11.5px;color:var(--txt3);text-align:center;line-height:1.6;}
+
+  /* ================= 转店广场三栏 ================= */
+  #plazaSell,#plazaBuy,#plazaMine{margin-top:2px;}
+  .pcard{margin:0 16px 12px;}
+  .pcard .pact{display:flex;gap:9px;margin-top:11px;}
+  .post-my{border-left:3px solid rgba(34,211,238,.5);}
+  .post-meta{font-size:11.5px;color:var(--txt2);margin-top:6px;}
+  .post-meta b{color:#7fe9ff;font-weight:700;}
+
+  /* 私聊（转店广场咨询） */
+  #plazaChat.active{display:flex;flex-direction:column;}
+  #plazaChat .cl{flex:1 0 auto;}
+
+  /* ================= 拨号页 ================= */
+  #dialer{display:none;}
+  #dialer.active{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:70px 24px 30px;background:linear-gradient(180deg,#0A1020,#0C1426);}
+  .dl-ava{width:80px;height:80px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:34px;color:#fff;box-shadow:0 0 30px rgba(99,102,241,.5);}
+  .dl-name{font-size:21px;font-weight:800;margin-top:16px;}
+  .dl-num{font-size:15px;color:var(--txt2);margin-top:6px;letter-spacing:1px;}
+  .dl-status{font-size:13px;color:#7fe9ff;margin-top:10px;min-height:18px;}
+  .dl-keypad{width:100%;max-width:280px;margin:30px 0 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .dl-keypad .k{height:60px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:700;cursor:pointer;}
+  .dl-keypad .k:active{background:rgba(255,255,255,.1);}
+  .dl-call{width:74px;height:74px;border-radius:50%;background:linear-gradient(135deg,#23C08A,#0FA968);display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;box-shadow:0 10px 28px rgba(35,192,138,.45);margin-bottom:14px;}
+  .dl-call:active{transform:scale(.96);}
+  .dl-call.hang{background:linear-gradient(135deg,#FF5C7A,#E0354F);box-shadow:0 10px 28px rgba(255,92,122,.45);}
+
+  /* ================= 表单页（发帖 / 店铺资料） ================= */
+  .form{margin:0 16px 12px;}
+  .field{background:var(--glass);border:1px solid var(--brd);border-radius:13px;padding:12px 13px;margin-bottom:11px;}
+  .field label{font-size:12px;color:var(--txt2);font-weight:700;display:block;margin-bottom:7px;}
+  .field input,.field textarea,.field select{width:100%;background:transparent;border:none;outline:none;color:var(--txt);font-size:14px;font-family:inherit;resize:none;}
+  .field textarea{min-height:62px;line-height:1.5;}
+  .field input::placeholder,.field textarea::placeholder{color:var(--txt3);}
+  .seg2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .seg2 .s{text-align:center;padding:11px 6px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--brd);font-size:13px;font-weight:600;color:var(--txt2);cursor:pointer;}
+  .seg2 .s.on{color:#fff;background:var(--grad-soft);border-color:rgba(34,211,238,.5);}
+  .chips-sel{display:flex;gap:8px;flex-wrap:wrap;}
+  .chips-sel .cs{font-size:12.5px;padding:7px 13px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid var(--brd);color:var(--txt2);font-weight:600;cursor:pointer;}
+  .chips-sel .cs.on{color:#fff;background:var(--grad);border-color:transparent;}
+  .photos{display:flex;gap:10px;flex-wrap:wrap;}
+  .photos .ph{width:74px;height:74px;border-radius:13px;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--txt3);cursor:pointer;flex-direction:column;}
+  .photos .ph small{font-size:9.5px;margin-top:2px;color:var(--txt3);}
+  .photos .ph.has{background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(34,211,238,.18));border-style:solid;border-color:rgba(34,211,238,.4);color:#fff;font-size:24px;}
+  .savebar{position:sticky;bottom:0;padding:12px 16px 14px;background:linear-gradient(180deg,rgba(12,19,34,0),rgba(12,19,34,.95));}
+  .form-h{font-size:13px;font-weight:800;color:#BFD3F5;margin:16px 16px 8px;display:flex;align-items:center;gap:7px;}
+  .form-h span{width:4px;height:14px;background:var(--grad);border-radius:3px;}
+  .form-note{font-size:11.5px;color:var(--txt3);text-align:center;margin:6px 16px 0;line-height:1.5;}
+</style>
+
+</head>
+<body>
+<div class="phone nobar">
+  <div class="notch"></div>
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="right">
+      <svg class="sb-ico" viewBox="0 0 18 12" fill="#EAF0FF"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg class="sb-ico" viewBox="0 0 18 12" fill="#EAF0FF"><path d="M9 2.5c2.3 0 4.4.9 6 2.4l1.4-1.5C14.5 1.3 11.9.5 9 .5S3.5 1.3 1.6 3.4L3 4.9C4.6 3.4 6.7 2.5 9 2.5z"/><path d="M9 6c1.3 0 2.5.5 3.4 1.4l1.4-1.5C12.4 4.4 10.8 3.5 9 3.5S5.6 4.4 4.2 5.9l1.4 1.5C6.5 6.5 7.7 6 9 6z"/><circle cx="9" cy="10" r="2"/></svg>
+      <svg class="sb-ico" viewBox="0 0 22 12" fill="#EAF0FF"><rect x="0.5" y="0.5" width="19" height="11" rx="3" fill="none" stroke="#EAF0FF"/><rect x="2" y="2" width="14" height="8" rx="1.5"/><rect x="20" y="4" width="2" height="4" rx="1"/></svg>
+    </span>
+  </div>
+
+  <div class="viewport" id="viewport">
+
+    <!-- ============ 登录 ============ -->
+    <section class="screen active" id="login">
+      <div class="login">
+        <div class="lg-logo">🤖</div>
+        <div class="lg-brand"><span>智店 AI</span></div>
+        <div class="lg-slogan">美业门店老板的智能助理</div>
+
+        <div class="lg-role" id="loginRole">
+          <div class="opt" onclick="pickRole(this)"><span class="em">🧑‍💼</span>店长</div>
+          <div class="opt" onclick="pickRole(this)"><span class="em">👑</span>老板</div>
+        </div>
+
+        <div class="lg-field"><span class="lp">📱</span><input id="lgPhone" inputmode="numeric" placeholder="手机号"></div>
+        <div class="lg-field"><span class="lp">🔒</span><input id="lgPwd" type="password" placeholder="密码"></div>
+
+        <button class="btn btn-primary" style="margin-top:6px" onclick="loginIn()">登录</button>
+        <div class="lg-wx" onclick="wxLogin()">💬 微信一键登录</div>
+        <div class="lg-tip">未注册的手机号将自动创建门店账号<br>登录即代表同意《用户协议》和《隐私政策》</div>
+      </div>
+    </section>
+
+    <!-- ============ 看板 (tab) ============ -->
+    <section class="screen" id="dashboard">
+      <div class="gh">
+        <div class="sp"></div>
+        <div class="brand"><span>智店 AI</span></div>
+        <div class="gear" onclick="navTo('mine')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.51 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
+        </div>
+      </div>
+
+      <div class="stores">
+        <div class="std" id="std">
+          <div class="stbtn" onclick="toggleStore(event)">🏪 <span id="stName">美丽人生 · 朝阳店</span> <span class="car">▾</span></div>
+          <div class="stmenu">
+            <div class="stmi on" onclick="pickStore(this,'美丽人生 · 朝阳店','2 人 · 1,250 算力')"><span class="ck">✓</span>美丽人生 · 朝阳店<span class="sm">2 人 · 1,250 算力</span></div>
+            <div class="stmi" onclick="pickStore(this,'美丽人生 · 望京店','4 人 · 860 算力')"><span class="ck"></span>美丽人生 · 望京店<span class="sm">4 人 · 860 算力</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="greet">
+        <div class="greet-top"><span class="pill-ai">AI 助理</span><h2>张老板，下午好！</h2></div>
+        <p>今天 AI 帮您盯了 3 件事，下面是结果 👇</p>
+      </div>
+
+      <div class="dgrid">
+        <div class="dcard" onclick="navTo('recruit')">
+          <div class="dl">📄 今日简历</div>
+          <div class="dn">12<i>份</i></div>
+          <div class="ds">↑ AI 筛出 3 份匹配</div>
+        </div>
+        <div class="dcard" onclick="navTo('acquire')">
+          <div class="dl">👤 今日新客</div>
+          <div class="dn">8<i>人</i></div>
+          <div class="ds">↑ 抖音来 5 人</div>
+        </div>
+        <div class="dcard" onclick="navTo('oldcust')">
+          <div class="dl">💬 老客唤醒</div>
+          <div class="dn">23<i>触达</i></div>
+          <div class="ds">↑ 3 人回复</div>
+        </div>
+        <div class="dcard" onclick="navTo('service')">
+          <div class="dl">📅 今日预约</div>
+          <div class="dn">5<i>单</i></div>
+          <div class="ds warn">↑ 待确认 2 单</div>
+        </div>
+      </div>
+
+      <div class="todowrap">
+        <h3>🚩 今日待办 <span>(3)</span></h3>
+        <div class="todo" onclick="navTo('recruit')">
+          <div class="dot" style="background:#FF5C7A;box-shadow:0 0 8px #FF5C7A"></div>
+          <div class="grow"><div class="tt">3 份简历待面试安排</div><div class="td">AI 匹配度 90% 以上，优先约</div></div>
+          <span class="ar">›</span>
+        </div>
+        <div class="todo" onclick="navTo('service')">
+          <div class="dot" style="background:#FFB020;box-shadow:0 0 8px #FFB020"></div>
+          <div class="grow"><div class="tt">2 位客户等待人工回复</div><div class="td">AI 无法解答，需您处理</div></div>
+          <span class="ar">›</span>
+        </div>
+        <div class="todo" onclick="navTo('video')">
+          <div class="dot" style="background:#22D3EE;box-shadow:0 0 8px #22D3EE"></div>
+          <div class="grow"><div class="tt">双 11 活动文案待确认</div><div class="td">AI 已生成，发布前看一眼</div></div>
+          <span class="ar">›</span>
+        </div>
+      </div>
+
+      <div class="foot">数据 AI 每天自动更新，你不用动手填</div>
+    </section>
+
+    <!-- ============ AI助手 (tab) ============ -->
+    <section class="screen" id="ai">
+      <div class="appbar">
+        <div>
+          <div class="title"><span class="ai">AI 助手</span></div>
+          <div class="sub">店老板的虚拟助理</div>
+        </div>
+      </div>
+
+      <div class="funcs">
+        <div class="fcell" onclick="navTo('recruit')">
+          <div class="fico" style="background:linear-gradient(135deg,#22D3EE,#6366F1)">📋</div>
+          <div class="ftitle">招员工</div>
+          <div class="fdesc">帮你自动找员工<br>谁合适 AI 给你打分</div>
+        </div>
+        <div class="fcell" onclick="navTo('acquire')">
+          <div class="fico" style="background:linear-gradient(135deg,#3E8BFF,#22D3EE)">📣</div>
+          <div class="ftitle">拉新客</div>
+          <div class="fdesc">AI 写广告文案<br>你看了再手动发</div>
+        </div>
+        <div class="fcell" onclick="navTo('oldcust')">
+          <div class="fico" style="background:linear-gradient(135deg,#23C08A,#22D3EE)">💌</div>
+          <div class="ftitle">唤醒老客</div>
+          <div class="fdesc">AI 写活动卡<br>你看了再发群里</div>
+        </div>
+        <div class="fcell" onclick="navTo('video')">
+          <div class="fico" style="background:linear-gradient(135deg,#A855F7,#6366F1)">🎬</div>
+          <div class="ftitle">拍视频</div>
+          <div class="fdesc">AI 写脚本生成视频<br>按平台配好文案</div>
+        </div>
+        <div class="fcell wide" onclick="navTo('plaza')">
+          <div class="fico" style="background:linear-gradient(135deg,#F5B544,#FFCE73)">🏷️</div>
+          <div class="ftitle">转店广场</div>
+          <div class="fdesc">收店、转店信息发这里，同行都能看到，咨询不收一分钱佣金</div>
+        </div>
+      </div>
+
+      <div class="foot">智店 AI · 门店小程序原型 v5.0</div>
+    </section>
+
+    <!-- ============ 客服 (tab) ============ -->
+    <section class="screen" id="service">
+      <div class="appbar">
+        <div>
+          <div class="title"><span class="ai">客服</span></div>
+          <div class="sub">AI 先回，答不了再转你</div>
+        </div>
+        <span class="badge" id="svcBadge">2 条待你回</span>
+      </div>
+
+      <div class="svc-sum">
+        <div class="s"><div class="n" id="sumAll">16</div><div class="l">全部会话</div></div>
+        <div class="s"><div class="n" id="sumAi" style="color:#7ff0c6">11</div><div class="l">AI 已自动回</div></div>
+        <div class="s w"><div class="n" id="sumWait">2</div><div class="l">待你人工回</div></div>
+      </div>
+
+      <div class="chips" id="svcChips">
+        <div class="chip on" data-f="all" onclick="setFilter(this,'all')">全部</div>
+        <div class="chip" data-f="wait" onclick="setFilter(this,'wait')">待你回 · 2</div>
+        <div class="chip" data-f="ai" onclick="setFilter(this,'ai')">AI 自动回</div>
+        <div class="chip" data-f="done" onclick="setFilter(this,'done')">人工已回</div>
+      </div>
+
+      <div id="convList"></div>
+      <div id="moreWrap"></div>
+      <div class="foot">默认展示最近 10 条 · 更早的会话点上面展开</div>
+    </section>
+
+    <!-- ============ 我的 (tab) ============ -->
+    <section class="screen" id="mine">
+      <div class="appbar">
+        <div>
+          <div class="title">我的</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#A855F7,#F5B544)">悦</div>
+          <div class="grow"><div class="name">美丽人生 · 朝阳店</div>
+          <div class="meta">主账号 · 已绑 2 个手机号</div></div><span class="tag t-green">买断版</span></div>
+      </div>
+
+      <div class="card gold">
+        <div class="row"><div class="grow"><div class="name">⚡ 算力积分</div>
+          <div class="meta">剩 <b style="color:#FFD98A">1,250</b> 分 · 用完再订</div></div>
+          <button class="btn btn-line" style="width:auto;padding:9px 17px" onclick="toast('跳转订阅套餐')">订阅</button></div>
+      </div>
+
+      <div class="sec"><h3><span class="bar"></span>门店管理</h3></div>
+      <div class="list">
+        <div class="li" onclick="navTo('shopInfo')">
+          <div class="ico">🏪</div>
+          <div class="grow"><div class="t">店铺资料</div><div class="d">名称、地址、营业时间、主营项目</div></div>
+          <span class="st ok">已完善</span><span class="ar">›</span>
+        </div>
+        <div class="li" onclick="navTo('bindManage')">
+          <div class="ico">🔗</div>
+          <div class="grow"><div class="t">绑定平台管理</div><div class="d">抖音 · 小红书 · 快手 · BOSS · 智联 · 58 · 企业微信</div></div>
+          <span class="st ok">已绑 4</span><span class="ar">›</span>
+        </div>
+      </div>
+
+      <div class="sec"><h3><span class="bar"></span>帮助与设置</h3></div>
+      <div class="list">
+        <div class="li" onclick="toast('打开使用帮助')">
+          <div class="ico">❓</div>
+          <div class="grow"><div class="t">使用帮助</div><div class="d">3 分钟学会用 AI</div></div>
+          <span class="ar">›</span>
+        </div>
+        <div class="li" onclick="navTo('acctSetting')">
+          <div class="ico">⚙️</div>
+          <div class="grow"><div class="t">账号设置</div><div class="d">手机号、密码、门店账号管理</div></div>
+          <span class="ar">›</span>
+        </div>
+        <div class="li" onclick="toast('已是最新版本')">
+          <div class="ico">📱</div>
+          <div class="grow"><div class="t">小程序版本</div><div class="d">当前 v1.4.0</div></div>
+          <span class="st ok">已是最新</span><span class="ar">›</span>
+        </div>
+        <div class="li" onclick="toast('查看用户协议')">
+          <div class="ico">📄</div>
+          <div class="grow"><div class="t">用户协议</div></div>
+          <span class="ar">›</span>
+        </div>
+        <div class="li" onclick="toast('查看隐私政策')">
+          <div class="ico">🔒</div>
+          <div class="grow"><div class="t">隐私政策</div></div>
+          <span class="ar">›</span>
+        </div>
+      </div>
+
+      <div class="list" style="margin-top:0">
+        <div class="li" onclick="logout()" style="justify-content:center;color:#FF7A90;font-weight:700">
+          <div class="ico" style="background:rgba(255,92,122,.14);color:#FF7A90">🚪</div>
+          <div class="grow" style="flex:0 0 auto"><div class="t" style="color:#FF7A90">退出登录</div></div>
+        </div>
+      </div>
+      <div class="foot">数据只属于你的门店 · 我们不做二道贩子</div>
+    </section>
+
+    <!-- ============ 会话记录 (sub) ============ -->
+    <section class="screen" id="chatlog">
+      <div class="subtop" style="padding-bottom:16px">
+        <span class="back" onclick="navBack()">‹ 返回</span>
+        <div class="chatlog-top" style="padding:10px 0 0">
+          <div class="nm" id="clName">会话记录</div>
+          <div class="sb" id="clSub">来源 · 消息记录</div>
+        </div>
+      </div>
+      <div id="clWait"></div>
+      <div class="cl" id="clBox"></div>
+
+      <div class="reply" id="clReply">
+        <div class="qr">
+          <div onclick="quickReply(this)">好的，我帮你约周六下午</div>
+          <div onclick="quickReply(this)">这个价包含两次护理</div>
+          <div onclick="quickReply(this)">我先帮你留位，晚点电话确认</div>
+        </div>
+        <div class="inputrow">
+          <input id="replyInput" placeholder="打一句回给她…" onkeydown="if(event.key==='Enter')sendReply()">
+          <button class="btn btn-primary send" onclick="sendReply()">发送</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 招员工 (sub) ============ -->
+    <section class="screen" id="recruit">
+      <div class="subtop"><span class="back" onclick="navBack()">‹ 返回</span><h2><span class="ai">招员工</span> 📋</h2>
+        <p>AI 自动收简历、打分，你只需点一下</p></div>
+      <div class="chips"><div class="chip on">全部</div><div class="chip">初筛通过</div><div class="chip">已沟通</div><div class="chip">已预约</div><div class="chip">已录用</div></div>
+      <div class="card" onclick="openModal('m-resume')">
+        <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#22D3EE,#6366F1)">李</div>
+          <div class="grow"><div class="name">李娜 <span class="tag t-brand">高匹配 92</span></div>
+          <div class="meta">美容师 · 3年 · 有证 · 马上能上班</div>
+          <div><span class="tag t-green">手法好评</span><span class="tag t-gold">干得久</span></div></div>
+          <div class="score"><div class="v">92</div><div class="k">匹配度</div></div></div>
+      </div>
+      <div class="card" onclick="openModal('m-resume')">
+        <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#6366F1,#A855F7)">王</div>
+          <div class="grow"><div class="name">王雪 <span class="tag t-brand">中匹配 78</span></div>
+          <div class="meta">美发助理 · 1年 · 还在学</div><div><span class="tag t-gray">需带教</span></div></div>
+          <div class="score"><div class="v">78</div><div class="k">匹配度</div></div></div>
+      </div>
+      <div class="card" onclick="openModal('m-resume')">
+        <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#A855F7,#22D3EE)">张</div>
+          <div class="grow"><div class="name">张敏 <span class="tag t-gold">中匹配 71</span></div>
+          <div class="meta">店长 · 5年 · 正在离职</div><div><span class="tag t-purple">会管人</span></div></div>
+          <div class="score"><div class="v">71</div><div class="k">匹配度</div></div></div>
+      </div>
+      <div class="foot">点简历 → 标记「已沟通 / 已预约 / 已录用」</div>
+    </section>
+
+    <!-- ============ 拉新客 (sub) ============ -->
+    <section class="screen" id="acquire">
+      <div class="subtop"><span class="back" onclick="navBack()">‹ 返回</span><h2><span class="ai">拉新客</span> 📣</h2>
+        <p>AI 写广告文案 → 你预览 → 手动发到已绑平台</p></div>
+
+      <div class="gen">
+        <div class="gt">🧠 AI 一键生成广告文案</div>
+        <div class="gd">按你店里最火的项目、客单价自动写，写完先给你看，能改</div>
+        <button class="btn btn-ai" id="acqBtn" style="margin-top:12px" onclick="genAI('acqBtn','acqPrev','acqDist','广告文案')">✨ 一键生成今天的广告</button>
+      </div>
+
+      <div class="prev" id="acqPrev">
+        <div class="phead"><div class="t">📝 广告文案预览</div><div class="e" onclick="toast('AI 又写了一版 ✅')">↻ 换一版</div></div>
+        <div class="pbody">
+          <div class="adtitle" contenteditable="true">肩颈救急 · 下班 40 分钟松快到能转头</div>
+          <div class="adtext" contenteditable="true">天天对着电脑，脖子僵得像块板？
+来美丽人生做一次肩颈护理，40 分钟通透到底。
+老客带新客，两个人都享 8 折。
+📍 朝阳店 · 每天 10:00–21:00</div>
+          <div class="adtag"><span>#肩颈护理</span><span>#北京美容</span><span>#下班放松</span><span>#老客福利</span></div>
+          <div class="ptip">👆 字可以直接点进去改，改完再发</div>
+        </div>
+      </div>
+
+      <div class="dist" id="acqDist">
+        <div class="dtitle">手动分发到已绑定的平台</div>
+        <div class="dsub">选好平台再点下面按钮 · 发不发你说了算</div>
+        <div class="pf on" onclick="togglePf(this)"><div class="pi" style="background:linear-gradient(135deg,#25F4EE,#FE2C55)">抖</div>
+          <div class="grow"><div class="pn">抖音</div><div class="pd">已绑定 · 建议带 2–4 个话题</div></div><div class="ck">✓</div></div>
+        <div class="pf" onclick="togglePf(this)"><div class="pi" style="background:linear-gradient(135deg,#FF2442,#FF7A9C)">红</div>
+          <div class="grow"><div class="pn">小红书</div><div class="pd">已绑定 · 标题控制在 20 字内更好</div></div><div class="ck">✓</div></div>
+        <div class="pf off" onclick="togglePf(this)"><div class="pi" style="background:linear-gradient(135deg,#FF7A00,#FFB020)">快</div>
+          <div class="grow"><div class="pn">快手</div><div class="pd">未绑定 · 去「我的」绑一下就能发</div></div><div class="ck">✓</div></div>
+        <button class="btn btn-primary dbtn" style="margin-top:12px" onclick="distGo(this,'广告文案')">手动分发（1 个）</button>
+      </div>
+
+      <div class="sec"><h3><span class="bar"></span>新客留言</h3><span class="more">来源已分开</span></div>
+      <div class="card">
+        <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#3E8BFF,#22D3EE)">小</div>
+          <div class="grow"><div class="name">小鹿 <span class="tag t-blue">抖音来的</span></div>
+          <div class="meta">“这家做眉毛靠谱吗？想约周末”</div></div><span class="tag t-green">AI 已回</span></div>
+        <div class="btn-row" style="margin-top:10px"><button class="btn btn-ghost" onclick="toast('查看 AI 回复')">看回复</button><button class="btn btn-line" onclick="toast('已转人工')">转人工</button></div>
+      </div>
+      <div class="card">
+        <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#A855F7,#6366F1)">阿</div>
+          <div class="grow"><div class="name">阿瑶 <span class="tag t-purple">小红书来的</span></div>
+          <div class="meta">“求推荐敏感肌护理项目～”</div></div><span class="tag t-gold">还没回</span></div>
+        <div class="btn-row" style="margin-top:10px"><button class="btn btn-primary" onclick="toast('AI 已智能回复 ✅')">AI 回复</button><button class="btn btn-line" onclick="toast('已转人工')">转人工</button></div>
+      </div>
+      <div class="foot">新客和老客严格分开 · 从哪来的自动打标</div>
+    </section>
+
+    <!-- ============ 唤醒老客 (sub) ============ -->
+    <section class="screen" id="oldcust">
+      <div class="subtop"><span class="back" onclick="navBack()">‹ 返回</span><h2><span class="ai">唤醒老客</span> 💌</h2>
+        <p>AI 写活动卡 → 你预览 → 手动发到企业微信群</p></div>
+
+      <div class="gen">
+        <div class="gt">🧠 AI 一键生成活动卡</div>
+        <div class="gd">按快到期的卡、老客常做的项目自动写，写完先给你看，能改</div>
+        <button class="btn btn-ai" id="ocBtn" style="margin-top:12px" onclick="genAI('ocBtn','ocPrev','ocDist','活动卡')">✨ 一键生成这周的活动卡</button>
+      </div>
+
+      <div class="prev" id="ocPrev">
+        <div class="phead"><div class="t">🎟️ 活动卡预览</div><div class="e" onclick="toast('AI 又写了一版 ✅')">↻ 换一版</div></div>
+        <div class="pbody">
+          <div class="coupon" contenteditable="true">
+            <div class="ct">老客专属 · 卡到期焕新礼</div>
+            <div class="cs">您的肩颈卡 5 天后到期，回来做一次，顺带领一份焕新礼 🎁</div>
+            <div class="cv"><b>8</b><i>折 · 限本人用</i></div>
+            <div class="cf"><span>有效期 10.20–10.31</span><span>美丽人生 · 朝阳店</span></div>
+          </div>
+          <div class="ptip">👆 卡上的字可以直接改，改完再发给老客</div>
+        </div>
+      </div>
+
+      <div class="dist" id="ocDist">
+        <div class="dtitle">手动分发到企业微信群</div>
+        <div class="dsub">已绑企业微信 · 选好群再发，一个群一个群来</div>
+        <div class="pf on" onclick="togglePf(this)"><div class="pi" style="background:linear-gradient(135deg,#2AA5FF,#3ED0C8)">群</div>
+          <div class="grow"><div class="pn">老客福利群</div><div class="pd">38 人 · 上次群发 3 天前</div></div><div class="ck">✓</div></div>
+        <div class="pf" onclick="togglePf(this)"><div class="pi" style="background:linear-gradient(135deg,#2AA5FF,#3ED0C8)">群</div>
+          <div class="grow"><div class="pn">会员专属群</div><div class="pd">24 人 · 上次群发 11 天前</div></div><div class="ck">✓</div></div>
+        <div class="pf" onclick="togglePf(this)"><div class="pi" style="background:linear-gradient(135deg,#2AA5FF,#3ED0C8)">群</div>
+          <div class="grow"><div class="pn">门店客户群</div><div class="pd">96 人 · 上次群发 6 天前</div></div><div class="ck">✓</div></div>
+        <button class="btn btn-primary dbtn" style="margin-top:12px" onclick="distGo(this,'活动卡')">手动分发（1 个）</button>
+      </div>
+
+      <div class="sec"><h3><span class="bar"></span>等着唤醒的老客</h3><span class="more">快到期的排前面</span></div>
+      <div class="card" onclick="openModal('m-chat')">
+        <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#23C08A,#22D3EE)">陈</div>
+          <div class="grow"><div class="name">陈姐 <span class="tag t-gold">卡快到期</span></div>
+          <div class="meta">32 天前来的 · 爱做肩颈护理</div></div><span class="arrow">›</span></div>
+      </div>
+      <div class="card" onclick="openModal('m-chat')">
+        <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#22D3EE,#23C08A)">刘</div>
+          <div class="grow"><div class="name">刘女士 <span class="tag t-gray">30天没来</span></div>
+          <div class="meta">41 天前来的 · 爱做面部补水</div></div><span class="arrow">›</span></div>
+      </div>
+      <div class="foot">点老客进临时对话 · AI 给提示，答不了转你</div>
+    </section>
+
+    <!-- ============ 拍视频 (sub) ============ -->
+    <section class="screen" id="video">
+      <div class="subtop"><span class="back" onclick="navBack()">‹ 返回</span><h2><span class="ai">拍视频</span> 🎬</h2>
+        <p>写脚本 → 一键生成视频 → 按平台配好文案</p></div>
+      <div class="ai-msg"><div class="hero-ava" style="width:34px;height:34px;font-size:17px;border-radius:11px">🤖</div>
+        <div class="b">已看你店数据：晚上 <b>7 点</b>最忙、<b>肩颈护理</b>最火、老客占 61%。先给你一版脚本👇</div></div>
+
+      <!-- ① 脚本预览 / 编写 -->
+      <div class="prev show" id="vdScript">
+        <div class="phead"><div class="t">① 视频脚本（可预览 / 可改）</div><div class="e" onclick="toast('AI 又写了一版 ✅')">↻ 换一版</div></div>
+        <div class="pbody">
+          <div class="editable" contenteditable="true">镜头 1（0–3 秒）：傍晚暖光空镜，店门招牌
+镜头 2（3–8 秒）：技师做肩颈护理特写，客人放松下来的表情
+镜头 3（8–13 秒）：打字幕「下班后来松松肩 · 老客专属 8 折」
+镜头 4（13–15 秒）：门店地址 + 预约按钮
+配音语气：像邻居推荐，不喊不吵</div>
+          <div class="ptip">👆 脚本可以直接改，改满意了再生成视频</div>
+          <div class="btn-row" style="margin-top:11px"><button class="btn btn-ghost" onclick="toast('说说想要啥风格')">改风格</button><button class="btn btn-line" onclick="toast('AI 又写了一版 ✅')">↻ 换一版</button></div>
+        </div>
+      </div>
+
+      <!-- ② 一键生成视频 -->
+      <div class="gen">
+        <div class="gt">② 用这个脚本一键生成视频</div>
+        <div class="gd">大约 40 秒生成好，自动配字幕和背景音乐</div>
+        <button class="btn btn-ai" id="vdBtn" style="margin-top:12px" onclick="genVideo()">🎬 一键生成视频</button>
+      </div>
+
+      <!-- ③ 视频预览 -->
+      <div class="prev" id="vdPrev">
+        <div class="phead"><div class="t">③ 视频预览</div><div class="e" onclick="toast('已重新生成一版 ✅')">↻ 再生成一版</div></div>
+        <div class="pbody">
+          <div class="vid">
+            <div class="thumb">💆<div class="play">▶</div>
+              <div class="vbar">00:06<span class="vtrack"><span class="vfill"></span></span>00:15</div>
+            </div>
+          </div>
+          <div class="ptip">15 秒 · 竖版 9:16 · 已配字幕 + 背景音乐</div>
+        </div>
+      </div>
+
+      <!-- ④ 各平台文案与标题 -->
+      <div class="prev" id="vdCopy">
+        <div class="phead"><div class="t">④ 各平台文案与标题</div><div class="e" onclick="toast('AI 重写了这条 ✅')">↻ 换一版</div></div>
+        <div class="pbody">
+          <div class="plat" id="vdPlat">
+            <div class="pt on" data-p="dy" onclick="pickPlat(this)">抖音</div>
+            <div class="pt" data-p="xhs" onclick="pickPlat(this)">小红书</div>
+            <div class="pt" data-p="ks" onclick="pickPlat(this)">快手</div>
+          </div>
+          <div class="rule" id="vdRule"></div>
+          <div class="adtitle" id="vdTitle" contenteditable="true"></div>
+          <div class="adtext" id="vdText" contenteditable="true"></div>
+          <div class="adtag" id="vdTags"></div>
+          <div class="ptip">👆 标题和文案都能改 · 换平台会自动换一套规则</div>
+        </div>
+      </div>
+
+      <div class="dist" id="vdDist">
+        <div class="dtitle">手动分发到已绑定的平台</div>
+        <div class="dsub">按上面选好的平台，带上它的标题和话题发出去</div>
+        <div class="pf on" onclick="togglePf(this)"><div class="pi" style="background:linear-gradient(135deg,#25F4EE,#FE2C55)">抖</div>
+          <div class="grow"><div class="pn">抖音</div><div class="pd">已绑定 · 15–30 秒 · 带话题</div></div><div class="ck">✓</div></div>
+        <div class="pf" onclick="togglePf(this)"><div class="pi" style="background:linear-gradient(135deg,#FF2442,#FF7A9C)">红</div>
+          <div class="grow"><div class="pn">小红书</div><div class="pd">已绑定 · 标题 ≤20 字</div></div><div class="ck">✓</div></div>
+        <div class="pf off" onclick="togglePf(this)"><div class="pi" style="background:linear-gradient(135deg,#FF7A00,#FFB020)">快</div>
+          <div class="grow"><div class="pn">快手</div><div class="pd">未绑定 · 去「我的」绑一下就能发</div></div><div class="ck">✓</div></div>
+        <button class="btn btn-primary dbtn" style="margin-top:12px" onclick="distGo(this,'视频')">手动分发（1 个）</button>
+      </div>
+
+      <div class="hint-card">💡 温馨提示：生成一条 <b>15 秒</b>视频大概用 <b>120 算力积分</b>。</div>
+    </section>
+
+    <!-- ============ 转店广场 (sub) ============ -->
+    <section class="screen" id="plaza">
+      <div class="subtop"><span class="back" onclick="navBack()">‹ 返回</span><h2><span class="ai">转店广场</span> 🏷️</h2>
+        <p>同行买卖店的信息都在这 · 不收佣金</p></div>
+      <div class="chips" id="plazaTabs">
+        <div class="chip on" onclick="switchPlaza(this,'buy')">收店</div>
+        <div class="chip" onclick="switchPlaza(this,'sell')">转店</div>
+        <div class="chip" onclick="switchPlaza(this,'mine')">我的发帖</div>
+      </div>
+
+      <div id="plazaSell" style="display:none">
+        <div class="card pcard">
+          <div class="row"><div class="grow"><div class="name">📍 朝阳 · 双井 <span class="tag t-gold">转店</span></div>
+            <div class="meta">美发店 · 80㎡ · 转让费 18 万 · 带 320 个会员</div></div></div>
+          <div class="pact">
+            <button class="btn btn-ghost" onclick="openPlazaChat('朝阳·双井 王老板','138****6677')">💬 咨询</button>
+            <button class="btn btn-line" onclick="openDialer('朝阳·双井 王老板','138****6677')">📞 直接打电话</button>
+          </div>
+        </div>
+        <div class="card pcard">
+          <div class="row"><div class="grow"><div class="name">📍 丰台 · 方庄 <span class="tag t-gold">转店</span></div>
+            <div class="meta">美容美甲综合店 · 120㎡ · 转让费 32 万 · 带 540 会员</div></div></div>
+          <div class="pact">
+            <button class="btn btn-ghost" onclick="openPlazaChat('丰台·方庄 李老板','139****2210')">💬 咨询</button>
+            <button class="btn btn-line" onclick="openDialer('丰台·方庄 李老板','139****2210')">📞 直接打电话</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="plazaBuy">
+        <div class="card pcard">
+          <div class="row"><div class="grow"><div class="name">📍 海淀 · 五道口 <span class="tag t-blue">收店</span></div>
+            <div class="meta">想接手美容店 · 预算 25 万内 · 50–100㎡</div></div></div>
+          <div class="pact">
+            <button class="btn btn-ghost" onclick="openPlazaChat('海淀·五道口 赵先生','137****8834')">💬 咨询</button>
+            <button class="btn btn-line" onclick="openDialer('海淀·五道口 赵先生','137****8834')">📞 直接打电话</button>
+          </div>
+        </div>
+        <div class="card pcard">
+          <div class="row"><div class="grow"><div class="name">📍 通州 · 万达 <span class="tag t-blue">收店</span></div>
+            <div class="meta">想接手美甲美睫店 · 预算 15 万内 · 30–60㎡</div></div></div>
+          <div class="pact">
+            <button class="btn btn-ghost" onclick="openPlazaChat('通州·万达 周女士','136****5566')">💬 咨询</button>
+            <button class="btn btn-line" onclick="openDialer('通州·万达 周女士','136****5566')">📞 直接打电话</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="plazaMine" style="display:none">
+        <div class="card pcard post-my">
+          <div class="row"><div class="grow"><div class="name">📍 朝阳 · 双井 <span class="tag t-gold">转店</span></div>
+            <div class="meta">美发店 · 80㎡ · 转让费 18 万 · 带 320 个会员</div></div></div>
+          <div class="post-meta">浏览 <b>1.2k</b> · <b>3</b> 人咨询 · 发布 12 天前</div>
+          <div class="pact">
+            <button class="btn btn-ghost" onclick="toast('进入编辑 ✅')">✏️ 编辑</button>
+            <button class="btn btn-line" onclick="toast('已下架该帖')">下架</button>
+          </div>
+        </div>
+        <div class="card pcard post-my">
+          <div class="row"><div class="grow"><div class="name">📍 朝阳 · 国贸 <span class="tag t-gold">转店</span></div>
+            <div class="meta">皮肤管理店 · 60㎡ · 转让费 12 万 · 带 180 会员</div></div></div>
+          <div class="post-meta">浏览 <b>860</b> · <b>1</b> 人咨询 · 发布 5 天前</div>
+          <div class="pact">
+            <button class="btn btn-ghost" onclick="toast('进入编辑 ✅')">✏️ 编辑</button>
+            <button class="btn btn-line" onclick="toast('已下架该帖')">下架</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="margin:2px 16px 0;width:calc(100% - 32px)" onclick="navTo('plazaPost')">+ 我也发一条</button>
+      <div class="foot">只有美业老板能进 · 信息不再分散</div>
+    </section>
+
+    <!-- ============ 转店广场 · 私聊 (sub) ============ -->
+    <section class="screen" id="plazaChat">
+      <div class="subtop" style="padding-bottom:16px">
+        <span class="back" onclick="navBack()">‹ 返回</span>
+        <div class="chatlog-top" style="padding:10px 0 0">
+          <div class="nm" id="pcName">咨询发帖人</div>
+          <div class="sb" id="pcSub">点「咨询」已自动通知对方</div>
+        </div>
+      </div>
+      <div class="cl" id="pcBox"></div>
+      <div class="reply" id="pcReply">
+        <div class="qr">
+          <div onclick="pcQuick(this)">转让费还能再谈吗？</div>
+          <div onclick="pcQuick(this)">店是租的还是买断的？</div>
+          <div onclick="pcQuick(this)">带员工一起转吗？</div>
+        </div>
+        <div class="inputrow">
+          <input id="pcInput" placeholder="给发帖人留个话…" onkeydown="if(event.key==='Enter')pcSend()">
+          <button class="btn btn-primary send" onclick="pcSend()">发送</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 拨号 ============ -->
+    <section class="screen" id="dialer">
+      <span class="back" style="position:absolute;top:54px;left:18px;font-size:22px;font-weight:700;cursor:pointer;z-index:5" onclick="navBack()">‹</span>
+      <div class="dl-ava" id="dlAva">🤝</div>
+      <div class="dl-name" id="dlName">联系人</div>
+      <div class="dl-num" id="dlNum">138****0000</div>
+      <div class="dl-status" id="dlStatus">点击绿色按钮拨号</div>
+      <div class="dl-keypad">
+        <div class="k">1</div><div class="k">2</div><div class="k">3</div>
+        <div class="k">4</div><div class="k">5</div><div class="k">6</div>
+        <div class="k">7</div><div class="k">8</div><div class="k">9</div>
+        <div class="k">＊</div><div class="k">0</div><div class="k">＃</div>
+      </div>
+      <div class="dl-call" id="dlCall" onclick="dlToggle()">📞</div>
+      <div class="dl-status" style="color:var(--txt3);cursor:pointer" onclick="navBack()">返回转店广场</div>
+    </section>
+
+    <!-- ============ 我也发一条 (发帖) ============ -->
+    <section class="screen" id="plazaPost">
+      <div class="subtop"><span class="back" onclick="navBack()">‹ 返回</span><h2><span class="ai">发一条</span> 🏷️</h2>
+        <p>收店 / 转店信息发出去，同行都能看到</p></div>
+      <div class="form">
+        <div class="field">
+          <label>类型</label>
+          <div class="seg2" id="ppType">
+            <div class="s on" onclick="segPick(this)">转店</div>
+            <div class="s" onclick="segPick(this)">收店</div>
+          </div>
+        </div>
+        <div class="field"><label>店铺区域</label><input id="ppArea" placeholder="如：朝阳 · 双井"></div>
+        <div class="field"><label>项目类型</label><input id="ppKind" placeholder="如：美发店 / 美容美甲综合店"></div>
+        <div class="field"><label>面积 / 转让费 / 会员数</label><input id="ppInfo" placeholder="如：80㎡ · 转让费 18 万 · 带 320 会员"></div>
+        <div class="field"><label>详细说明（选填）</label><textarea id="ppDesc" placeholder="补充经营情况、转让原因等"></textarea></div>
+      </div>
+      <div class="savebar">
+        <button class="btn btn-primary" onclick="postSubmit()">发布到转店广场</button>
+      </div>
+    </section>
+
+    <!-- ============ 店铺资料 ============ -->
+    <section class="screen" id="shopInfo">
+      <div class="subtop"><span class="back" onclick="navBack()">‹ 返回</span><h2><span class="ai">店铺资料</span> 🏪</h2>
+        <p>填好资料，AI 才能按你店的情况干活</p></div>
+      <div class="form-h"><span></span>店铺基础信息</div>
+      <div class="form">
+        <div class="field"><label>店铺名称</label><input id="siName" value="美丽人生 · 朝阳店"></div>
+        <div class="field"><label>地址</label><input id="siAddr" value="北京市朝阳区双井桥东路 18 号 2 层"></div>
+        <div class="field"><label>联系电话</label><input id="siTel" value="010-8888 6666"></div>
+        <div class="field"><label>营业时间</label><input id="siHour" value="每天 10:00 – 21:30"></div>
+      </div>
+      <div class="form-h"><span></span>店铺属性</div>
+      <div class="form">
+        <div class="field">
+          <label>商圈类型</label>
+          <div class="seg2" id="siZone">
+            <div class="s" onclick="segPick(this)">社区店</div>
+            <div class="s on" onclick="segPick(this)">商圈店</div>
+            <div class="s" onclick="segPick(this)">商场店</div>
+            <div class="s" onclick="segPick(this)">街边店</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>店铺规模</label>
+          <div class="seg2" id="siSize">
+            <div class="s" onclick="segPick(this)">1–2 人</div>
+            <div class="s on" onclick="segPick(this)">3–5 人</div>
+            <div class="s" onclick="segPick(this)">6–10 人</div>
+            <div class="s" onclick="segPick(this)">10 人以上</div>
+          </div>
+        </div>
+        <div class="field"><label>客单价（元）</label><input id="siPrice" value="280"></div>
+        <div class="field">
+          <label>主营项目（可多选）</label>
+          <div class="chips-sel" id="siItems">
+            <div class="cs on" onclick="csPick(this)">美发</div>
+            <div class="cs" onclick="csPick(this)">美甲</div>
+            <div class="cs on" onclick="csPick(this)">美睫</div>
+            <div class="cs on" onclick="csPick(this)">护肤</div>
+            <div class="cs" onclick="csPick(this)">SPA</div>
+            <div class="cs" onclick="csPick(this)">纹绣</div>
+            <div class="cs" onclick="csPick(this)">其他</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-h"><span></span>品牌介绍</div>
+      <div class="form">
+        <div class="field"><label>品牌特点</label><textarea id="siFeat" placeholder="一句话说清你的品牌">专注肩颈护理 8 年，老客回头率 70%</textarea></div>
+        <div class="field"><label>店铺介绍</label><textarea id="siIntro" placeholder="写写你的店">美丽人生朝阳店主打肩颈护理与皮肤管理，环境安静，技师稳定。</textarea></div>
+      </div>
+      <div class="form-h"><span></span>店铺照片</div>
+      <div class="form">
+        <div class="photos" id="siPhotos">
+          <div class="ph" onclick="phPick(this)">＋<small>门头照</small></div>
+          <div class="ph" onclick="phPick(this)">＋<small>店内环境</small></div>
+          <div class="ph" onclick="phPick(this)">＋<small>项目展示</small></div>
+        </div>
+        <div class="form-note">点击上传照片，最多 9 张（原型演示，不会真正保存）</div>
+      </div>
+      <div class="savebar">
+        <button class="btn btn-primary" onclick="siSave()">保存店铺资料</button>
+      </div>
+    </section>
+
+    <!-- ============ 绑定平台管理 ============ -->
+    <section class="screen" id="bindManage">
+      <div class="subtop"><span class="back" onclick="navBack()">‹ 返回</span><h2><span class="ai">绑定平台管理</span> 🔗</h2>
+        <p>绑上平台，AI 才能帮你发内容、收简历</p></div>
+      <div class="sec"><h3><span class="bar"></span>社交平台</h3><span class="more">发内容、收新客</span></div>
+      <div class="list">
+        <div class="li" onclick="bind(this,'抖音')">
+          <div class="ico" style="background:linear-gradient(135deg,#25F4EE,#FE2C55);color:#fff">抖</div>
+          <div class="grow"><div class="t">抖音</div><div class="d">@美丽人生护肤 · 已发 26 条</div></div>
+          <span class="st ok">已绑定</span><span class="ar">›</span>
+        </div>
+        <div class="li" onclick="bind(this,'小红书')">
+          <div class="ico" style="background:linear-gradient(135deg,#FF2442,#FF7A9C);color:#fff">红</div>
+          <div class="grow"><div class="t">小红书</div><div class="d">未绑定 · 绑上后 AI 才能发笔记</div></div>
+          <span class="st">去绑定</span><span class="ar">›</span>
+        </div>
+        <div class="li" onclick="bind(this,'快手')">
+          <div class="ico" style="background:linear-gradient(135deg,#FF7A00,#FFB020);color:#fff">快</div>
+          <div class="grow"><div class="t">快手</div><div class="d">未绑定 · 绑上后 AI 才能发视频</div></div>
+          <span class="st">去绑定</span><span class="ar">›</span>
+        </div>
+      </div>
+      <div class="sec"><h3><span class="bar"></span>招聘平台</h3><span class="more">绑上自动收简历</span></div>
+      <div class="list">
+        <div class="li" onclick="bind(this,'BOSS直聘')">
+          <div class="ico" style="background:linear-gradient(135deg,#00C6FF,#0072FF);color:#fff">B</div>
+          <div class="grow"><div class="t">BOSS 直聘</div><div class="d">已绑 · 今天自动收了 7 份简历</div></div>
+          <span class="st ok">已绑定</span><span class="ar">›</span>
+        </div>
+        <div class="li" onclick="bind(this,'智联招聘')">
+          <div class="ico" style="background:linear-gradient(135deg,#2F6BFF,#5B8CFF);color:#fff">智</div>
+          <div class="grow"><div class="t">智联招聘</div><div class="d">未绑定 · 绑上自动同步简历</div></div>
+          <span class="st">去绑定</span><span class="ar">›</span>
+        </div>
+        <div class="li" onclick="bind(this,'58同城')">
+          <div class="ico" style="background:linear-gradient(135deg,#FF7A00,#FFC400);color:#fff">58</div>
+          <div class="grow"><div class="t">58 同城</div><div class="d">未绑定 · 招保洁、前台也能用</div></div>
+          <span class="st">去绑定</span><span class="ar">›</span>
+        </div>
+        <div class="li" onclick="bind(this,'企业微信')">
+          <div class="ico" style="background:linear-gradient(135deg,#2AA5FF,#3ED0C8);color:#fff">企</div>
+          <div class="grow"><div class="t">企业微信</div><div class="d">已绑 · 老客群发、专人接待走这里</div></div>
+          <span class="st ok">已绑定</span><span class="ar">›</span>
+        </div>
+      </div>
+      <div class="foot">绑定的账号只用于你这家店 · 随时可解绑</div>
+    </section>
+
+    <!-- ============ 账号设置 (sub) ============ -->
+    <section class="screen" id="acctSetting">
+      <div class="subtop"><span class="back" onclick="navBack()">‹ 返回</span><h2><span class="ai">账号设置</span> ⚙️</h2>
+        <p>改手机号、改密码，老板还能管门店账号</p></div>
+
+      <div class="form-h"><span></span>登录安全</div>
+      <div class="form">
+        <div class="field">
+          <label>手机号</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input id="asPhone" value="138****6688" style="flex:1" readonly>
+            <button class="btn btn-line" style="width:auto;padding:8px 15px;flex:0 0 auto" onclick="asChangePhone()">改绑</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>登录密码</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input id="asPwd" type="password" value="123456" style="flex:1" readonly>
+            <button class="btn btn-line" style="width:auto;padding:8px 15px;flex:0 0 auto" onclick="asChangePwd()">修改</button>
+          </div>
+        </div>
+        <div class="form-note">改手机号需短信验证；修改密码后下次登录用新密码</div>
+      </div>
+
+      <div class="sec"><h3><span class="bar"></span>门店账号管理</h3><span class="more">仅主账号可看</span></div>
+      <div class="list">
+        <div class="li">
+          <div class="ico" style="background:linear-gradient(135deg,#A855F7,#F5B544)">悦</div>
+          <div class="grow"><div class="t">美丽人生 · 朝阳店（主账号）</div><div class="d">老板 · 138****6688</div></div>
+          <span class="tag t-green">本人</span>
+        </div>
+        <div class="li" onclick="toast('打开店长账号')">
+          <div class="ico" style="background:linear-gradient(135deg,#22D3EE,#6366F1)">店</div>
+          <div class="grow"><div class="t">店长 · 王敏</div><div class="d">可看店数据、发活动 · 138****2233</div></div>
+          <span class="st">已授权</span><span class="ar">›</span>
+        </div>
+        <div class="li" onclick="toast('打开技师账号')">
+          <div class="ico" style="background:linear-gradient(135deg,#23C08A,#22D3EE)">技</div>
+          <div class="grow"><div class="t">技师 · 李婷</div><div class="d">仅接单、看自己客情 · 138****7788</div></div>
+          <span class="st">已授权</span><span class="ar">›</span>
+        </div>
+        <div class="li" onclick="toast('添加门店账号')">
+          <div class="ico" style="background:rgba(168,85,247,.18)">＋</div>
+          <div class="grow"><div class="t">添加门店账号</div><div class="d">给店长 / 技师开子账号</div></div>
+          <span class="ar">›</span>
+        </div>
+      </div>
+      <div class="form-note">老板的主账号可管理门店下所有子账号：改权限、停用、重置密码。</div>
+    </section>
+
+  </div><!-- /viewport -->
+
+  <!-- ===== tab bar ===== -->
+  <div class="tabbar">
+    <div class="tab on" data-tab="dashboard" onclick="tabTo('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M8 16v-4"/><path d="M13 16V9"/><path d="M18 16v-7"/></svg>看板</div>
+    <div class="tab" data-tab="ai" onclick="tabTo('ai',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M18.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>AI 助手</div>
+    <div class="tab voice"><div class="fab" id="fab" onpointerdown="voiceDown(event)" onpointerup="voiceUp(event)" onpointerleave="voiceCancel(event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>
+    </div>语音</div>
+    <div class="tab" data-tab="service" onclick="tabTo('service',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4" height="7" rx="2"/><rect x="17" y="13" width="4" height="7" rx="2"/><path d="M20 20a4 4 0 0 1-4 3h-3"/></svg>客服
+      <span class="dotn" id="tabDot">2</span></div>
+    <div class="tab" data-tab="mine" onclick="tabTo('mine',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>我的</div>
+  </div>
+
+  <!-- ===== voice layer ===== -->
+  <div class="vlayer" id="vlayer">
+    <div class="vclose" onclick="closeVoice()">✕</div>
+    <div id="vRec">
+      <div class="vorb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></div>
+      <div class="vtitle" style="text-align:center;margin-top:16px">正在听你说话…</div>
+      <div class="vsub">长按中间语音键说话，松手 AI 就给你办</div>
+      <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="vhint">照着说就行：<br>① 这个月招人情况咋样<br>② 把周末活动发给老客<br>③ 抖音那条视频好不好</div>
+    </div>
+    <div class="vres" id="vRes">
+      <div class="vtitle" style="margin-bottom:14px">AI 助手 · 办好了</div>
+      <div id="vBubbles"></div>
+      <div class="chips-row" id="vChips"></div>
+      <button class="btn btn-primary" style="margin-top:18px" onclick="closeVoice()">知道了</button>
+    </div>
+  </div>
+
+  <!-- ===== modal: resume ===== -->
+  <div class="modal" id="m-resume" onclick="if(event.target===this)closeModal('m-resume')">
+    <div class="sheet"><div class="grab"></div>
+      <div class="shead">简历 · 李娜 <span style="font-size:13px;color:#7fe9ff;cursor:pointer" onclick="closeModal('m-resume')">关闭 ✕</span></div>
+      <div class="sbody">
+        <div class="card" style="margin:0 0 12px">
+          <div class="row"><div class="avatar" style="background:linear-gradient(135deg,#22D3EE,#6366F1)">李</div>
+            <div class="grow"><div class="name">李娜 <span class="tag t-brand">匹配度 92</span></div>
+            <div class="meta">美容师 · 28岁 · 干了 3 年 · 有证</div></div>
+            <div class="score"><div class="v">92</div><div class="k">高匹配</div></div></div>
+          <div style="margin-top:11px;font-size:13px;color:#DCE6FF;line-height:1.6">AI 说：手法被夸过、离职原因靠谱、马上能上班，跟你店里“美容师”很配，<b>建议先联系她</b>。</div>
+          <div style="margin-top:8px"><span class="tag t-green">手法好评</span><span class="tag t-gold">干得久</span><span class="tag t-brand">马上能上班</span></div>
+        </div>
+        <div class="name" style="font-size:13px;margin:4px 0 11px;color:var(--txt2)">聊聊到哪一步了？（点一下就记上了）</div>
+        <div class="btn-row"><button class="btn btn-ghost" onclick="toast('已记：聊过了')">✅ 聊过了</button><button class="btn btn-ghost" onclick="toast('已记：约了面试')">📅 约了面试</button></div>
+        <button class="btn btn-primary" style="margin-top:9px" onclick="toast('已记：录用了 🎉')">🎉 录用了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== modal: chat ===== -->
+  <div class="modal" id="m-chat" onclick="if(event.target===this)closeModal('m-chat')">
+    <div class="sheet"><div class="grab"></div>
+      <div class="shead">临时对话 · 陈姐 <span style="font-size:13px;color:#7fe9ff;cursor:pointer" onclick="closeModal('m-chat')">关闭 ✕</span></div>
+      <div class="sbody">
+        <div class="hint-card">🤖 <b>AI 提醒你：</b>陈姐，35岁，在你这花了 1.2 万，爱做肩颈护理，32 天没来，卡 5 天后到期。可以推“焕新礼”叫她回来。</div>
+        <div class="chat"><div class="bubble">陈姐~ 您上次做的肩颈护理卡项快到期啦，这周给您留了专属焕新礼🎁</div></div>
+        <div class="chat"><div class="bubble me">哎好像是，最近太忙了😅 周末有空</div></div>
+        <div class="chat"><div class="bubble">那我帮您约周六下午？技师还是上次的小娜~</div></div>
+        <div class="btn-row" style="margin-top:6px"><button class="btn btn-primary" onclick="toast('已帮你约好周六 ✓')">就这么定</button><button class="btn btn-line" onclick="toast('已转给你亲自接待')">我来接</button></div>
+        <div class="meta" style="font-size:11px;color:var(--txt3);text-align:center;margin-top:10px">AI 答不了的，会自动转给你</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  var stack=[];
+  function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('viewport').scrollTop=0;document.querySelector('.phone').classList.toggle('nobar',id==='login');}
+  function navTo(id){var c=document.querySelector('.screen.active');if(c)stack.push(c.id);show(id);}
+  function navBack(){var p=stack.pop();if(p)show(p);else show('dashboard');}
+  function tabTo(id,el){stack=[];show(id);document.querySelectorAll('.tab:not(.voice)').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
+  function openModal(id){document.getElementById(id).classList.add('show');}
+  function closeModal(id){document.getElementById(id).classList.remove('show');}
+  function seg(el){el.parentElement.querySelectorAll('div').forEach(d=>d.classList.remove('on'));el.classList.add('on');}
+  var tt;function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.opacity=1;clearTimeout(tt);tt=setTimeout(function(){t.style.opacity=0;},1600);}
+  document.querySelectorAll('.chips').forEach(c=>c.addEventListener('click',function(e){if(e.target.classList.contains('chip')){c.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));e.target.classList.add('on');}}));
+
+  /* ================= 看板 · 门店下拉切换 ================= */
+  function toggleStore(e){
+    e.stopPropagation();
+    var d=document.getElementById('std');
+    var open=d.classList.contains('open');
+    closeStore();
+    if(!open){
+      d.classList.add('open');
+      var mk=document.createElement('div');
+      mk.className='stmask show';mk.id='stmask';
+      mk.onclick=closeStore;
+      document.body.appendChild(mk);
+    }
+  }
+  function closeStore(){
+    var d=document.getElementById('std');if(d)d.classList.remove('open');
+    var m=document.getElementById('stmask');if(m)m.remove();
+  }
+  function pickStore(el,name){
+    document.querySelectorAll('.stmi').forEach(function(x){
+      x.classList.remove('on');x.querySelector('.ck').textContent='';
+    });
+    el.classList.add('on');el.querySelector('.ck').textContent='✓';
+    document.getElementById('stName').textContent=name;
+    closeStore();
+    toast('已切换到 '+name);
+  }
+
+  /* ================= AI 生成 → 预览 → 手动分发 ================= */
+  function genAI(btnId,prevId,distId,label){
+    var b=document.getElementById(btnId);
+    if(b.classList.contains('load'))return;
+    b.classList.add('load');
+    var old=b.innerHTML;
+    b.innerHTML='<span class="spin"></span>AI 正在生成…';
+    setTimeout(function(){
+      b.classList.remove('load');
+      b.innerHTML='✨ 重新生成一版';
+      document.getElementById(prevId).classList.add('show');
+      document.getElementById(distId).classList.add('show');
+      toast(label+'已生成 · 看了再发');
+    },1500);
+  }
+  function togglePf(el){
+    if(el.classList.contains('off')){toast('这个平台还没绑，去「我的」绑一下');return;}
+    el.classList.toggle('on');
+    var box=el.closest('.dist');
+    var n=box.querySelectorAll('.pf.on').length;
+    box.querySelector('.dbtn').textContent='手动分发（'+n+' 个）';
+  }
+  function distGo(el,name){
+    var n=el.closest('.dist').querySelectorAll('.pf.on').length;
+    if(n===0){toast('先选一个要发的地方');return;}
+    toast(name+'已手动分发 ✅');
+  }
+
+  var VDP={
+    dy:{rule:'抖音规则 · 时长 15–30 秒 · 前 3 秒要抓人 · 话题 2–4 个',
+        t:'下班后来松松肩｜老客专属 8 折',
+        d:'忙了一天，脖子僵得像块板？\n来美丽人生做一次肩颈护理，40 分钟通透到底。\n老客带新客，两个人都 8 折。',
+        g:['#肩颈护理','#下班放松','#北京美容','#老客福利']},
+    xhs:{rule:'小红书规则 · 标题 ≤20 字 · 带 emoji · 正文多换行、像分享',
+        t:'打工人肩颈自救✨40分钟松到能转头',
+        d:'天天对着电脑，脖子真的会僵。\n\n这周去做了次肩颈护理，\n做完那一刻感觉头都轻了。\n\n📍朝阳 · 美丽人生\n老客 8 折，记得提前约～',
+        g:['#肩颈护理','#打工人自救','#北京探店','#周末去哪']},
+    ks:{rule:'快手规则 · 标题带地域 · 语气口语化 · 话题 3–5 个',
+        t:'北京朝阳这家肩颈，做完是真松快',
+        d:'老铁们，久坐脖子真的扛不住。\n来这儿做个肩颈，40 分钟，做完能转头了。\n老客 8 折，报我名字也行。',
+        g:['#肩颈护理','#北京生活','#美容养生','#打工人','#周末安排']}
+  };
+  function pickPlat(el){
+    el.parentElement.querySelectorAll('.pt').forEach(function(x){x.classList.remove('on');});
+    el.classList.add('on');
+    var d=VDP[el.getAttribute('data-p')];
+    document.getElementById('vdRule').textContent=d.rule;
+    document.getElementById('vdTitle').textContent=d.t;
+    document.getElementById('vdText').textContent=d.d;
+    document.getElementById('vdTags').innerHTML=d.g.map(function(x){return '<span>'+x+'</span>';}).join('');
+  }
+  function genVideo(){
+    var b=document.getElementById('vdBtn');
+    if(b.classList.contains('load'))return;
+    b.classList.add('load');
+    b.innerHTML='<span class="spin"></span>AI 正在生成视频…';
+    setTimeout(function(){
+      b.classList.remove('load');
+      b.innerHTML='🎬 重新生成一版';
+      ['vdPrev','vdCopy','vdDist'].forEach(function(i){document.getElementById(i).classList.add('show');});
+      pickPlat(document.querySelector('#vdPlat .pt.on'));
+      toast('视频已生成 · 先预览再发');
+    },1800);
+  }
+
+  /* ================= 客服 · 会话数据 ================= */
+  var convs=[
+    {id:1,n:'小鹿',av:'小',bg:'linear-gradient(135deg,#3E8BFF,#22D3EE)',src:'抖音咨询',srcCls:'t-blue',tm:'刚刚',st:'wait',
+     last:'“做眉毛多少钱？周末能约吗” · AI 报完价，客人问能不能再便宜',
+     msgs:[{r:'cust',t:'做眉毛多少钱？周末能约吗',tm:'14:02'},
+           {r:'ai',t:'您好~ 我们家雾眉 1280 起，周末还有 2 个位子，帮您留周六上午？',tm:'14:02'},
+           {r:'cust',t:'有点贵，能便宜点吗？',tm:'14:06'}]},
+    {id:2,n:'陈姐',av:'陈',bg:'linear-gradient(135deg,#23C08A,#22D3EE)',src:'老客唤醒',srcCls:'t-gold',tm:'3 分钟',st:'ai',
+     last:'“卡快到期了，周末有空” · AI 已帮约周六下午',
+     msgs:[{r:'ai',t:'陈姐~ 您的肩颈卡 5 天后到期，这周给您留了专属焕新礼🎁',tm:'13:40'},
+           {r:'cust',t:'卡快到期了，周末有空',tm:'13:52'},
+           {r:'ai',t:'那帮您约周六下午 3 点，技师还是小娜~',tm:'13:52'}]},
+    {id:3,n:'阿瑶',av:'阿',bg:'linear-gradient(135deg,#A855F7,#6366F1)',src:'小红书',srcCls:'t-purple',tm:'12 分钟',st:'wait',
+     last:'“敏感肌能做光子吗？” · AI 不敢答，等你确认',
+     msgs:[{r:'cust',t:'你好，我皮肤特别敏感，能做光子嫩肤吗？',tm:'13:45'},
+           {r:'ai',t:'这个问题涉及皮肤状况判断，我帮您叫专业的人来回答~',tm:'13:45'},
+           {r:'cust',t:'嗯嗯，等你们回复',tm:'13:46'}]},
+    {id:4,n:'王女士',av:'王',bg:'linear-gradient(135deg,#22D3EE,#6366F1)',src:'抖音咨询',srcCls:'t-blue',tm:'28 分钟',st:'ai',
+     last:'“有停车位吗” · AI 已回：楼下免费 2 小时',
+     msgs:[{r:'cust',t:'你们店有停车位吗？',tm:'13:20'},{r:'ai',t:'有的~ 楼下停车场免费 2 小时，到店报门店名就行',tm:'13:20'}]},
+    {id:5,n:'刘女士',av:'刘',bg:'linear-gradient(135deg,#22D3EE,#23C08A)',src:'老客唤醒',srcCls:'t-gold',tm:'1 小时',st:'done',
+     last:'“我周四来吧” · 已由张老板人工确认',
+     msgs:[{r:'ai',t:'刘姐，41 天没来做面部补水啦，本周有老客专属 8 折~',tm:'12:10'},
+           {r:'cust',t:'我周四来吧',tm:'12:32'},
+           {r:'hm',t:'好嘞刘姐，周四下午 2 点给您留着，来了找小娜',tm:'12:35'}]},
+    {id:6,n:'婷婷',av:'婷',bg:'linear-gradient(135deg,#FF7A9C,#A855F7)',src:'快手',srcCls:'t-gray',tm:'2 小时',st:'ai',
+     last:'“指甲能保持多久” · AI 已回 3–4 周',
+     msgs:[{r:'cust',t:'做的指甲能保持多久呀？',tm:'11:30'},{r:'ai',t:'正常 3–4 周，我们用的是进口胶，掉角 7 天内免费补~',tm:'11:31'}]},
+    {id:7,n:'周先生',av:'周',bg:'linear-gradient(135deg,#6366F1,#3E8BFF)',src:'抖音咨询',srcCls:'t-blue',tm:'3 小时',st:'ai',
+     last:'“给女朋友买卡能送人吗” · AI 已回可转赠',
+     msgs:[{r:'cust',t:'想给女朋友买张卡，能送人吗？',tm:'10:20'},{r:'ai',t:'可以的~ 买完在小程序里点“转赠”，填她手机号就行',tm:'10:21'}]},
+    {id:8,n:'丽丽',av:'丽',bg:'linear-gradient(135deg,#23C08A,#A855F7)',src:'老客唤醒',srcCls:'t-gold',tm:'昨天',st:'ai',
+     last:'“最近没时间” · AI 已改约下月，标记待跟进',
+     msgs:[{r:'ai',t:'丽丽~ 您的护理卡还剩 2 次，要不要这周约一下？',tm:'昨天 18:20'},
+           {r:'cust',t:'最近没时间，下个月吧',tm:'昨天 19:02'},
+           {r:'ai',t:'好~ 那我下月 1 号提醒您，先帮您留着位子',tm:'昨天 19:03'}]},
+    {id:9,n:'小雨',av:'雨',bg:'linear-gradient(135deg,#3E8BFF,#6366F1)',src:'小红书',srcCls:'t-purple',tm:'昨天',st:'ai',
+     last:'“学生有优惠吗” · AI 已回凭学生证 8 折',
+     msgs:[{r:'cust',t:'学生有优惠吗？',tm:'昨天 16:10'},{r:'ai',t:'有的，凭学生证 8 折，工作日白天人少体验更好~',tm:'昨天 16:11'}]},
+    {id:10,n:'小美',av:'美',bg:'linear-gradient(135deg,#22D3EE,#23C08A)',src:'抖音咨询',srcCls:'t-blue',tm:'昨天',st:'ai',
+     last:'“可以刷医保吗” · AI 已说明自费',
+     msgs:[{r:'cust',t:'你们可以刷医保吗？',tm:'昨天 11:02'},{r:'ai',t:'美业项目都是自费的哦，不过可以开电子发票~',tm:'昨天 11:03'}]},
+    {id:11,n:'芳姐',av:'芳',bg:'linear-gradient(135deg,#A855F7,#3E8BFF)',src:'老客唤醒',srcCls:'t-gold',tm:'2 天前',st:'done',
+     last:'“帮我约下周三” · 已人工确认',
+     msgs:[{r:'ai',t:'芳姐，您的年卡还有 3 次，本月约起来？',tm:'10-18 15:20'},
+           {r:'cust',t:'帮我约下周三',tm:'10-18 16:40'},
+           {r:'hm',t:'约好了芳姐，下周三上午 10 点',tm:'10-18 16:42'}]},
+    {id:12,n:'阿俊',av:'俊',bg:'linear-gradient(135deg,#6366F1,#22D3EE)',src:'快手',srcCls:'t-gray',tm:'2 天前',st:'ai',
+     last:'“男士可以做脸吗” · AI 已回有男士专区',
+     msgs:[{r:'cust',t:'男士可以做脸吗？',tm:'10-18 10:11'},{r:'ai',t:'当然可以，我们有男士清洁专区，45 分钟做完就走~',tm:'10-18 10:12'}]},
+    {id:13,n:'娟娟',av:'娟',bg:'linear-gradient(135deg,#23C08A,#3E8BFF)',src:'抖音咨询',srcCls:'t-blue',tm:'3 天前',st:'ai',
+     last:'“团购券能用吗” · AI 已回可核销',
+     msgs:[{r:'cust',t:'团购券能用吗？',tm:'10-17 14:00'},{r:'ai',t:'可以核销~ 到店出示券码就行，需要提前 1 天预约',tm:'10-17 14:01'}]},
+    {id:14,n:'悦悦',av:'悦',bg:'linear-gradient(135deg,#FF2442,#FF7A9C)',src:'小红书',srcCls:'t-purple',tm:'4 天前',st:'ai',
+     last:'“做完多久能化妆” · AI 已回 24 小时',
+     msgs:[{r:'cust',t:'做完脸多久能化妆？',tm:'10-16 19:20'},{r:'ai',t:'建议 24 小时后再化，当天我们会给您敷修复面膜~',tm:'10-16 19:21'}]},
+    {id:15,n:'林女士',av:'林',bg:'linear-gradient(135deg,#3E8BFF,#A855F7)',src:'老客唤醒',srcCls:'t-gold',tm:'5 天前',st:'done',
+     last:'“不去了，搬家了” · 已人工跟进转店',
+     msgs:[{r:'ai',t:'林姐，最近没见您来，卡里还有 1 次~',tm:'10-15 10:00'},
+           {r:'cust',t:'我搬家了，去不了了',tm:'10-15 12:30'},
+           {r:'hm',t:'理解~ 我帮您登记转店，卡可以转到新店用',tm:'10-15 12:40'}]},
+    {id:16,n:'小雅',av:'雅',bg:'linear-gradient(135deg,#22D3EE,#A855F7)',src:'抖音咨询',srcCls:'t-blue',tm:'6 天前',st:'ai',
+     last:'“几点关门” · AI 已回 21:30',
+     msgs:[{r:'cust',t:'你们几点关门？',tm:'10-14 20:10'},{r:'ai',t:'每天 10:00–21:30，最后一位客人 20:30 前到店哦~',tm:'10-14 20:11'}]}
+  ];
+  var curFilter='all', showAllConvs=false, curChat=1;
+
+  function renderConvs(){
+    var list=convs.filter(function(c){return curFilter==='all'||c.st===curFilter;});
+    var shown=showAllConvs?list:list.slice(0,10);
+    var html=shown.map(function(c){
+      var badge = c.st==='wait' ? '<span class="stbadge sb-wait"><i class="pdot"></i>待你回</span>'
+                : c.st==='done' ? '<span class="stbadge sb-done">人工已回</span>'
+                : '<span class="stbadge sb-ai">AI 已回</span>';
+      return '<div class="conv '+(c.st==='wait'?'wait':'')+'" onclick="openChat('+c.id+')">'
+        + '<div class="avatar" style="background:'+c.bg+'">'+c.av+'</div>'
+        + '<div class="grow"><div class="nm">'+c.n+'<span class="tag '+c.srcCls+'">'+c.src+'</span></div>'
+        + '<div class="msg">'+c.last+'</div></div>'
+        + '<div class="rt"><span class="tm">'+c.tm+'</span>'+badge+'</div></div>';
+    }).join('');
+    document.getElementById('convList').innerHTML = html || '<div class="tip">这里没有会话</div>';
+    var rest=list.length-10;
+    document.getElementById('moreWrap').innerHTML =
+      (list.length>10 ? '<div class="morebtn" onclick="toggleMore()">'
+        + (showAllConvs ? '收起，只看最近 10 条 ︿' : '展开更早的 '+rest+' 条会话 ﹀')
+        + '</div>' : '');
+    var waitN=convs.filter(function(c){return c.st==='wait';}).length;
+    document.getElementById('sumAll').textContent=convs.length;
+    document.getElementById('sumAi').textContent=convs.filter(function(c){return c.st==='ai';}).length;
+    document.getElementById('sumWait').textContent=waitN;
+    document.getElementById('svcBadge').textContent=waitN+' 条待你回';
+    var td=document.getElementById('tabDot');
+    td.textContent=waitN; td.style.display=waitN?'block':'none';
+  }
+  function toggleMore(){showAllConvs=!showAllConvs;renderConvs();}
+  function setFilter(el,f){
+    curFilter=f;showAllConvs=false;
+    document.querySelectorAll('#svcChips .chip').forEach(function(x){x.classList.remove('on');});
+    el.classList.add('on');
+    renderConvs();
+  }
+
+  function openChat(id){
+    curChat=id; renderChat();
+    var c=document.querySelector('.screen.active');
+    if(c)stack.push(c.id);
+    show('chatlog');
+  }
+  function renderChat(){
+    var c=convs.filter(function(x){return x.id===curChat;})[0]; if(!c)return;
+    document.getElementById('clName').textContent=c.n;
+    document.getElementById('clSub').innerHTML='来源：'+c.src+' · 共 '+c.msgs.length+' 条消息';
+    document.getElementById('clBox').innerHTML=c.msgs.map(function(m){
+      if(m.r==='cust') return '<div class="mline cust"><div class="mb"><div class="who">👤 '+c.n+'</div>'+m.t+'<div class="ct">'+m.tm+'</div></div></div>';
+      if(m.r==='ai') return '<div class="mline me ai"><div class="mb"><div class="who">🤖 AI 客服 · 自动回复</div>'+m.t+'<div class="ct">'+m.tm+'</div></div></div>';
+      return '<div class="mline me hm"><div class="mb"><div class="who">👤 人工 · 张老板</div>'+m.t+'<div class="ct">'+m.tm+'</div></div></div>';
+    }).join('');
+    var wb=document.getElementById('clWait');
+    if(c.st==='wait'){
+      wb.innerHTML='<div class="waitbar">⚠️ <b>AI 答不了这句，等你回。</b>你回复后 AI 自动停止介入，不会抢话。</div>';
+      document.getElementById('clReply').style.display='block';
+    }else if(c.st==='done'){
+      wb.innerHTML='<div class="waitbar" style="background:rgba(62,139,255,.12);border-color:rgba(62,139,255,.35);color:#B7D0FF">✅ <b>已由你人工回复</b>，AI 已停手。需要继续回就在下面输入。</div>';
+      document.getElementById('clReply').style.display='block';
+    }else{
+      wb.innerHTML='<div class="waitbar" style="background:rgba(35,192,138,.10);border-color:rgba(35,192,138,.35);color:#9BE9C9">🤖 <b>AI 已自动回复</b>，你随时可以接管。答不上来的会自动转你。</div>';
+      document.getElementById('clReply').style.display='block';
+    }
+  }
+  function quickReply(el){document.getElementById('replyInput').value=el.textContent;}
+  function sendReply(){
+    var ip=document.getElementById('replyInput'), v=ip.value.trim(); if(!v){toast('先说一句吧');return;}
+    var c=convs.filter(function(x){return x.id===curChat;})[0];
+    c.msgs.push({r:'hm',t:v,tm:'刚刚'});
+    c.st='done'; c.last='“'+v+'” · 你人工回复';
+    ip.value=''; renderChat(); renderConvs(); toast('已发送 · AI 已停手');
+  }
+
+  /* ================= 我的 · 绑定 ================= */
+  function bind(el,name){
+    var st=el.querySelector('.st');
+    if(st.classList.contains('ok')){
+      toast(name+' 已绑定，可管理授权');
+    }else{
+      st.classList.add('ok'); st.textContent='已绑定';
+      var d=el.querySelector('.d'); if(d) d.textContent='已绑 · AI 可以开始用了';
+      toast(name+' 绑定成功 ✅');
+    }
+  }
+
+  /* ---- voice ---- */
+  var fab=document.getElementById('fab'),pressT=null,longEnough=false,vi=0;
+  var demos=[
+    {q:"这个月招人情况咋样？",a:"这个月收到 38 份简历，筛出 12 人，录了 3 人；还有 5 人等着面试，建议今天先联系「李娜」。"},
+    {q:"把周末活动发给老客",a:"已经做好「周末焕新礼」活动卡，能发给 38 位卡快到期的老客，现在就发吗？"},
+    {q:"抖音那条视频好不好？",a:"昨天那条视频播放 1.2 万，带来 9 个新客，比上周好 30%。建议照这个风格再来一条。"}
+  ];
+  function voiceDown(e){e.preventDefault();longEnough=false;pressT=setTimeout(function(){longEnough=true;openVoice();},280);}
+  function voiceUp(e){if(pressT)clearTimeout(pressT);fab.classList.remove('pressing');if(longEnough){finishVoice();}else{openVoice();setTimeout(finishVoice,650);}}
+  function voiceCancel(e){if(pressT)clearTimeout(pressT);fab.classList.remove('pressing');}
+  function openVoice(){document.getElementById('vlayer').classList.add('show');document.getElementById('vRec').style.display='block';document.getElementById('vRes').classList.remove('show');}
+  function finishVoice(){
+    var d=demos[vi%demos.length];vi++;
+    document.getElementById('vRec').style.display='none';
+    document.getElementById('vRes').classList.add('show');
+    document.getElementById('vBubbles').innerHTML=
+      '<div class="bubble me">🎙️ '+d.q+'</div>'+
+      '<div class="bubble ai"><div class="who">🤖 AI 助手</div>'+d.a+'</div>';
+    document.getElementById('vChips').innerHTML=
+      '<div class="qchip" onclick="toast(\'已去办理\')">去办理</div>'+
+      '<div class="qchip" onclick="openVoice();document.getElementById(\'vRec\').style.display=\'block\';document.getElementById(\'vRes\').classList.remove(\'show\');">再说一句</div>';
+  }
+  function closeVoice(){document.getElementById('vlayer').classList.remove('show');}
+
+  /* ================= 登录 ================= */
+  function pickRole(el){document.querySelectorAll('#loginRole .opt').forEach(function(x){x.classList.remove('on');});el.classList.add('on');}
+  function loginIn(){
+    var r=document.querySelector('#loginRole .opt.on');
+    if(!r){toast('先选你是店长还是老板');return;}
+    var ph=document.getElementById('lgPhone').value.trim();
+    var pw=document.getElementById('lgPwd').value.trim();
+    if(!ph||!pw){toast('手机号和密码都要填');return;}
+    tabTo('dashboard',document.querySelector('.tab[data-tab=dashboard]'));
+    toast('登录成功，欢迎回来 · '+r.textContent);
+  }
+  function wxLogin(){toast('微信授权中…');setTimeout(function(){tabTo('dashboard',document.querySelector('.tab[data-tab=dashboard]'));toast('微信登录成功 · 欢迎回来');},800);}
+  function logout(){show('login');toast('已退出登录');}
+
+  /* ================= 转店广场 · 三栏 ================= */
+  function switchPlaza(el,key){
+    document.querySelectorAll('#plazaTabs .chip').forEach(function(x){x.classList.remove('on');});
+    el.classList.add('on');
+    ['sell','buy','mine'].forEach(function(k){document.getElementById('plaza'+k.charAt(0).toUpperCase()+k.slice(1)).style.display=(k===key?'block':'none');});
+  }
+
+  /* ================= 转店广场 · 私聊 ================= */
+  function openPlazaChat(n,p){
+    document.getElementById('pcName').textContent=n;
+    document.getElementById('pcSub').textContent=p+' · 点「咨询」已自动通知对方';
+    document.getElementById('pcBox').innerHTML=
+      '<div class="mline cust"><div class="mb"><div class="who">🤝 '+n+'</div>你好，看到你发的转店信息，想了解下情况～<div class="ct">刚刚</div></div></div>';
+    document.getElementById('pcInput').value='';
+    navTo('plazaChat');
+  }
+  function pcQuick(el){document.getElementById('pcInput').value=el.textContent;}
+  function pcSend(){
+    var ip=document.getElementById('pcInput'),v=ip.value.trim();if(!v){toast('先说点什么吧');return;}
+    var box=document.getElementById('pcBox');
+    box.innerHTML+='<div class="mline me"><div class="mb">'+v+'<div class="ct">刚刚</div></div></div>';
+    ip.value='';box.scrollTop=box.scrollHeight;toast('已发送给发帖人');
+  }
+
+  /* ================= 拨号 ================= */
+  var calling=false;
+  function openDialer(n,p){
+    document.getElementById('dlName').textContent=n;
+    document.getElementById('dlNum').textContent=p;
+    calling=false;
+    document.getElementById('dlCall').className='dl-call';
+    document.getElementById('dlCall').textContent='📞';
+    document.getElementById('dlStatus').textContent='点击绿色按钮拨号';
+    navTo('dialer');
+  }
+  function dlToggle(){
+    var b=document.getElementById('dlCall'),s=document.getElementById('dlStatus');
+    if(!calling){calling=true;b.className='dl-call hang';b.textContent='✕';s.textContent='通话中 00:01 · 点此挂断';}
+    else{calling=false;b.className='dl-call';b.textContent='📞';s.textContent='已结束通话';setTimeout(function(){s.textContent='点击绿色按钮拨号';},1200);}
+  }
+
+  /* ================= 发帖表单 ================= */
+  function segPick(el){el.parentElement.querySelectorAll('.s').forEach(function(x){x.classList.remove('on');});el.classList.add('on');}
+  function csPick(el){el.classList.toggle('on');}
+  function phPick(el){
+    if(el.classList.contains('has')){el.classList.remove('has');el.innerHTML='＋<small>'+el.dataset.cap+'</small>';}
+    else{el.dataset.cap=el.querySelector('small').textContent;el.classList.add('has');el.innerHTML='✓';}
+  }
+  function postSubmit(){
+    var area=document.getElementById('ppArea').value.trim();
+    if(!area){toast('先填店铺区域');return;}
+    toast('已发布到转店广场 ✅');navBack();
+  }
+  function siSave(){
+    var o={name:document.getElementById('siName').value,name2:document.getElementById('siAddr').value};
+    toast('店铺资料已保存 ✅，随时可回来修改');
+  }
+
+  function asChangePhone(){
+    var cur=document.getElementById('asPhone').value;
+    toast('验证码已发到 '+cur.replace(/\d/g,'*').slice(0,3)+'****'+cur.slice(-4)+' ✅');
+  }
+  function asChangePwd(){
+    toast('请输入新密码（原型演示）');
+  }
+
+  renderConvs();
+</script>
+</body>
+</html>
